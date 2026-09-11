@@ -1,0 +1,69 @@
+### 0 https://api-hc.metatft.com/tft-comps-api/unit_items_processed
+HTTP 200, 67534 bytes
+{"units":{"DA_Sentinel18":{"unit":"DA_Sentinel18","count":792158,"place":3459780,"avg":4.3675,"pick":0.37133891605664227,"items":[{"itemName":"DA_ProtectorsVow"},{"itemName":"DA_GargoyleStoneplate"},{"itemName":"DA_WarmogsArmor"},{"itemName":"DA_AdaptiveHelm"},{"itemName":"DA_SpiritVisage"},{"itemName":"DA_Crownguard"},{"itemName":"DA_DragonsClaw"},{"itemName":"DA_SunfireCape"},{"itemName":"DA_ThiefsGloves"},{"itemName":"DA_Evenshroud"}]},"DA_Amumu18":{"unit":"DA_Amumu18","count":744164,"place":3185973,"avg":4.2813,"pick":0.3488408286331453,"items":[{"itemName":"DA_GargoyleStoneplate"},{"itemName":"DA_WarmogsArmor"},{"itemName":"DA_SpiritVisage"},{"itemName":"DA_ProtectorsVow"},{"itemName":"DA_Crownguard"},{"itemName":"DA_ThiefsGloves"},{"itemName":"DA_DragonsClaw"},{"itemName":"DA_SteadfastHeart"},{"itemName":"DA_BrambleVest"},{"itemName":"DA_SunfireCape"}]},"DA_Taric18":{"unit":"DA_Taric18","count":576103,"place":2250039,"avg":3.9056,"pick":0.2700590836133445,"items":[{"itemName":"DA_GargoyleStoneplate"},{"itemName":"DA_WarmogsArmor"},{"itemName":"DA_SpiritVisage"},{"itemName":"DA_ProtectorsVow"},{"itemName":"DA_ThiefsGloves"},{"itemName":"DA_Crownguard"},{"itemName":"DA_SunfireCape"},{"itemName":"DA_Evenshroud"},{"itemName":"DA_DragonsClaw"},{"itemName":"DA_SteadfastHeart"}]},"DA_18_Kennen":{"unit":"DA_18_Kennen","count":537350,"place":2108635,"avg":3.9241,"pick":0.25189288821552863,"items":[{"itemName":"DA_ThiefsGloves"},{"itemName":"DA_EdgeOfNight"},{"itemName":"DA_HandO
+
+### 1 https://api-hc.metatft.com/tft-comps-api/latest_cluster_id
+HTTP 200, 63 bytes
+{"updated":1789118645901,"tft_set":"TFTSet18","cluster_id":422}
+
+### 2 https://api-hc.metatft.com/tft-comps-api/latest_cluster_info
+HTTP 200, 331887 bytes
+{"cluster_info":{"cluster_id":422,"state":"published","created_at":"2026-08-26T09:29:55.198Z","updated_at":"2026-08-26T09:35:59.369Z","is_failed":false,"is_deleted":false,"tft_set":"TFTSet18","is_default":true,"cluster_details":{"tft_set":"TFTSet18","clusters":[{"Cluster":422000,"centroid":[0.0078,0.003,0.0131,0.011,0.0131,0.1301,0.0101,0.0155,0,0.0018,0.0465,0.0101,0.0048,0,0.003,0.261,0.0579,0.0298,0,0.006,0.0286,0.5233,0.0066,0.0203,1.6957,0,0,0,0,0.0394,0.0388,0.0072,0.0072,0.0298,0.6414,3.4958,0.0131,4.2751,0.0095,0.0018,0.0609,0.0644,1.506,0.0078,0.1712,4.1002,0,0.0859,0,0.1098,0.0167,0.003,0.0042,0.0555,0.0042,0.0107,0.0012,0.0119,0.2661,0.0018,0.0018,0.0203,0.0286,0.0516,0,0,0.0012,0.0328,0.0054,0.037,0.0674,1.4857,0,0,0,0,0.0038,0.0186,0.0143,0.2005,0,0.8062,0.0258,0.0086,1.2363,0.7279,0.0263,0.0177,0.0158,0.02,0.4038,0.0143,0.0334,1.1862,0.001,0.1613,0.0649,0.4964,0.485,0.0029],"units_string":"DA_18_Kobuko, DA_18_Rakan, DA_18_Rengar, DA_18_Lillia, DA_18_Tristana, DA_Vi18, DA_18_Rammus, DA_18_Sivir","traits_string":"DA_18_Defender_1, DA_18_Fae_1, DA_18_Hunter_1, DA_Primal18_1, DA_18_Rival_1, DA_18_Sprykin_1, DA_Juggernaut18_1","name":[{"name":"DA_18_Fae","score":1.2362768496420065,"type":"trait"},{"name":"DA_18_Rengar","score":4.2750596658711215,"type":"unit"}],"name_string":"DA_18_Fae, DA_18_Rengar"},{"Cluster":422001,"centroid":[3.6071,0,0.3994,0.0299,0,0.0335,0.0877,0.0008,0.0012,0.0093,0.0178,0.0049,0.0032,0,2.9964,0.421,0.0457,0.0784,0,0.2937,0.0222,0.0121,0.103
+
+### 3 https://api-hc.metatft.com/tft-comps-api/comp_details?comp=
+HTTP 200, 52 bytes
+{"error":"Please request details for a single comp"}
+
+### 4 https://api-hc.metatft.com/tft-comps-api/comp_builds
+HTTP 200, 4456800 bytes
+{"results":{"422000":{"builds":[{"cluster":"422000","count":361,"avg":3.4571,"unit":"DA_18_Rengar","buildName":["DA_18_EmblemFae","DA_18_EmblemHunter","DA_18_EmblemSprykin"],"build":[],"num_items":3,"score":0.6696,"place_change":-1.114,"unit_numitems_count":32670},{"cluster":"422000","unit_buildNames":"DA_18_Rengar&DA_18_EmblemFae|DA_18_EmblemHunter|DA_EdgeOfNight","count":956,"avg":3.8368,"unit":"DA_18_Rengar","buildName":["DA_18_EmblemFae","DA_18_EmblemHunter","DA_EdgeOfNight"],"build":[],"num_items":3,"score":0.6222,"adjusted_score":0.6222,"place_change":-0.734},{"cluster":"422000","unit_buildNames":"DA_18_Rengar&DA_18_EmblemFae|DA_18_EmblemSprykin|DA_EdgeOfNight","count":1106,"avg":3.8924,"unit":"DA_18_Rengar","buildName":["DA_18_EmblemFae","DA_18_EmblemSprykin","DA_EdgeOfNight"],"build":[],"num_items":3,"score":0.6118,"adjusted_score":0.6118,"place_change":-0.679},{"cluster":"422000","count":692,"avg":3.6691,"unit":"DA_18_Tristana","buildName":["DA_GiantSlayer","DA_GuinsoosRageblade","DA_KrakensFury"],"build":[],"num_items":3,"score":0.5914,"place_change":-0.902,"unit_numitems_count":29166},{"cluster":"422000","unit_buildNames":"DA_18_Rengar&DA_18_EmblemFae|DA_18_EmblemSprykin|DA_TitansResolve","count":949,"avg":3.9283,"unit":"DA_18_Rengar","buildName":["DA_18_EmblemFae","DA_18_EmblemSprykin","DA_TitansResolve"],"build":[],"num_items":3,"score":0.5753,"adjusted_score":0.5753,"place_change":-0.643},{"cluster":"422000","unit_buildNames":"DA_18_Tristana&DA_Deathblade|DA_Gui
+
+### 5 https://api-hc.metatft.com/tft-comps-api/comp_options
+HTTP 200, 4443112 bytes
+{"results":{"options":{"422000":{"7":[{"cluster":"422000","units_list":"DA_18_Kobuko&DA_18_Lillia&DA_18_Rakan&DA_18_Rammus&DA_18_Rengar&DA_18_Tristana&DA_Vi18","traits_list":"DA_18_Defender_1&DA_18_Fae_2&DA_18_Rival_1&DA_18_Sprykin_1&DA_Juggernaut18_1","count":2131,"avg":6.5819,"num_unit_slots":7,"num_units":7,"score":58.408},{"cluster":"422000","units_list":"DA_18_Lillia&DA_18_Rakan&DA_18_Rammus&DA_18_Rengar&DA_18_Sivir&DA_18_Tristana&DA_Vi18","traits_list":"DA_18_Defender_1&DA_18_Fae_2&DA_18_Hunter_1&DA_18_Rival_1&DA_Juggernaut18_1&DA_Primal18_1","count":1879,"avg":6.3214,"num_unit_slots":7,"num_units":7,"score":57.822},{"cluster":"422000","units_list":"DA_18_Lillia&DA_18_Rakan&DA_18_Rammus&DA_18_Rengar&DA_18_Sivir&DA_18_Tristana&DA_Vi18","traits_list":"DA_18_Defender_1&DA_18_Fae_2&DA_18_Hunter_1&DA_18_Rival_1&DA_18_Sprykin_1&DA_Juggernaut18_1&DA_Primal18_1","count":632,"avg":5.8133,"num_unit_slots":7,"num_units":7,"score":41.699},{"cluster":"422000","units_list":"DA_18_Lillia&DA_18_Rakan&DA_18_Rammus&DA_18_Rengar&DA_18_Sivir&DA_18_Tristana&DA_Vi18","traits_list":"DA_18_Defender_1&DA_18_Fae_2&DA_18_Hunter_2&DA_18_Rival_1&DA_Juggernaut18_1&DA_Primal18_1","count":249,"avg":6.0843,"num_unit_slots":7,"num_units":7,"score":31.534},{"cluster":"422000","units_list":"DA_18_Kobuko&DA_18_Rakan&DA_18_Rammus&DA_18_Rengar&DA_18_Sivir&DA_18_Tristana&DA_Vi18","traits_list":"DA_18_Fae_1&DA_18_Hunter_1&DA_18_Rival_1&DA_18_Sprykin_1&DA_Juggernaut18_1&DA_Primal18_1","count":297,"avg":6.8451,"
+
+### 6 https://api-hc.metatft.com/tft-comps-api/comp_augment_tiers
+HTTP 200, 27293 bytes
+{"results":{"422002":{"augments":[{"id":"DA_BandOfThieves","tier":"S"},{"id":"DA_ChampDelivery","tier":"S"},{"id":"DA_ChampDeliveryPlus","tier":"S"},{"id":"DA_ChampDeliveryPlusPlus","tier":"S"},{"id":"DA_FeelingLucky","tier":"S"},{"id":"DA_LateGameSpecialist","tier":"S"},{"id":"DA_PartialAscension","tier":"S"},{"id":"DA_RollingForDays","tier":"S"},{"id":"DA_SliceOfLife","tier":"S"},{"id":"DA_SlightlyMagicRoll","tier":"S"},{"id":"DA_SmallGrabBag","tier":"S"},{"id":"DA_18_WispRebatePlus","tier":"S"},{"id":"DA_BackupBows","tier":"A"},{"id":"DA_BoxingLessons","tier":"A"},{"id":"DA_CarveAPath","tier":"A"},{"id":"DA_CognitiveTaxPlus","tier":"A"},{"id":"DA_ComponentBuffet","tier":"A"},{"id":"DA_KickStart","tier":"A"},{"id":"DA_MissedConnections","tier":"A"},{"id":"DA_18_OneTwoFive","tier":"A"},{"id":"DA_PatienceIsAVirtue","tier":"A"},{"id":"DA_SilverSpoon","tier":"A"},{"id":"DA_PandorasBench","tier":"B"},{"id":"DA_Recombobulator","tier":"B"}],"gods":[],"source_title":"DRAVEN > Legendaries > Lvl 9","distance":0.43292900262123185},"422003":{"augments":[{"id":"DA_BoxingLessons","tier":"S"},{"id":"DA_18_BranchingOut","tier":"S"},{"id":"DA_18_BranchingOutPlus","tier":"S"},{"id":"DA_ChampDeliveryPlus","tier":"S"},{"id":"DA_ComponentBuffet","tier":"S"},{"id":"DA_FeelingLucky","tier":"S"},{"id":"DA_LatentForge","tier":"S"},{"id":"DA_PartialAscension","tier":"S"},{"id":"DA_RollingForDays","tier":"S"},{"id":"DA_SilverDestinyPlusPlus","tier":"S"},{"id":"DA_SmallGrabBag","tier":"S"},{"id":"DA_T
+
+### 7 https://api-hc.metatft.com/tft-comps-api
+HTTP 404, 548 bytes
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+<!-- a padding to disable MSIE and Chrome friendly error page -->
+
+
+### 8 https://data.metatft.com/lookups/companions_lookup.json
+HTTP 200, 1130940 bytes
+{"91f2e228-4e36-4dad-9a97-36036e3eca36":{"contentId":"91f2e228-4e36-4dad-9a97-36036e3eca36","itemId":13010,"name":"Beatmaker Ossia","loadoutsIcon":"/lol-game-data/assets/ASSETS/Loadouts/Companions/Tooltip_AkaliDragon_Beatmaker_Tier1.png","description":"Ossia embodies cool. It commands rhyme and rhythm with an effortless flow that makes even the greatest Little Legends jealous.","level":1,"speciesName":"Ossia","speciesId":13,"rarity":"Epic","rarityValue":1,"isDefault":false,"upgrades":["0e251d36-d86e-4c58-9b7f-bcee2376a408","e3151dc2-c45c-4949-89e9-6afda3b2fd5f"],"TFTOnly":false,"companionType":"kLittleLegend","TFTRarity":"kStandard","IsWIP":false},"0e251d36-d86e-4c58-9b7f-bcee2376a408":{"contentId":"0e251d36-d86e-4c58-9b7f-bcee2376a408","itemId":13011,"name":"Beatmaker Ossia","loadoutsIcon":"/lol-game-data/assets/ASSETS/Loadouts/Companions/Tooltip_AkaliDragon_Beatmaker_Tier2.png","description":"Ossia embodies cool. It commands rhyme and rhythm with an effortless flow that makes even the greatest Little Legends jealous.","level":2,"speciesName":"Ossia","speciesId":13,"rarity":"Epic","rarityValue":1,"isDefault":false,"upgrades":[],"TFTOnly":false,"companionType":"kLittleLegend","TFTRarity":"kStandard","IsWIP":false},"e3151dc2-c45c-4949-89e9-6afda3b2fd5f":{"contentId":"e3151dc2-c45c-4949-89e9-6afda3b2fd5f","itemId":13012,"name":"Beatmaker Ossia","loadoutsIcon":"/lol-game-data/assets/ASSETS/Loadouts/Companions/Tooltip_AkaliDragon_Beatmaker_Tier3.png","description":"Ossia embodies
+
+### 9 https://api.metatft.com/public/profile/lookup/${Ae}/${encodeURIComponent(et
+HTTP 404, 51 bytes
+{"error":{"status_code":404,"message":"Not Found"}}
+
+### 10 https://api.metatft.com/public/profile/refresh/${Ae}/${encodeURIComponent(Te
+HTTP 404, 0 bytes
+
+
+### 11 https://api.metatft.com/public/profile/rating_changes/${_.Server}/${encodeURIComponent(s.summoner.account.summoner_name
+HTTP 404, 51 bytes
+{"error":{"status_code":404,"message":"Not Found"}}
+
+### 12 https://api.metatft.com/public/profile/lookup_by_riotid/${_.Server}/${encodeURIComponent(xt
+HTTP 404, 32 bytes
+{"message":"Summoner Not found"}
+
+### 13 https://api.metatft.com/public/profile/lookup/${_.Server}/${encodeURIComponent(s.summoner.account.summoner_name
+HTTP 404, 51 bytes
+{"error":{"status_code":404,"message":"Not Found"}}
+
