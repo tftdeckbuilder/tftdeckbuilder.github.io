@@ -164,6 +164,18 @@ func handleSave(w http.ResponseWriter, r *http.Request) {
 // 페이지가 읽고 쓰는 데이터 파일 (data/ 폴더)
 var dataFiles = map[string]bool{"meta.txt": true, "meta_metatft.txt": true, "meta_tftlabs.txt": true, "bis.json": true, "emblems.json": true}
 
+// 디버그 덤프: data/debug/ 아래에 저장 (큰 파일은 앞부분만)
+const debugMax = 900 << 10
+
+func writeDebug(name string, b []byte) {
+	dir := filepath.Join(dataDir, "debug")
+	os.MkdirAll(dir, 0o755)
+	if len(b) > debugMax {
+		b = append(append([]byte{}, b[:debugMax]...), []byte("\n<!-- ... truncated ... -->\n")...)
+	}
+	os.WriteFile(filepath.Join(dir, name), b, 0o644)
+}
+
 type updateResult struct {
 	Count  int
 	Text   string
@@ -209,7 +221,7 @@ func runUpdate(src string) (*updateResult, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 30<<20))
 	// 디버그용: 받은 원본을 항상 저장 (파서가 이상하면 이 파일을 채팅에 첨부)
-	os.WriteFile(filepath.Join(dataDir, src+"_last.html"), body, 0o644)
+	writeDebug(src+"_last.html", body)
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("사이트 응답 %d", resp.StatusCode)
 	}
@@ -227,7 +239,7 @@ func runUpdate(src string) (*updateResult, error) {
 			dom, err = renderDOM(url)
 		}
 		if err == nil {
-			os.WriteFile(filepath.Join(dataDir, src+"_dom.html"), []byte(dom), 0o644)
+			writeDebug(src+"_dom.html", []byte(dom))
 			var cs []labsComp
 			if src == "tftlabs" {
 				cs = parseLabs(dom)
@@ -286,9 +298,8 @@ func runUpdate(src string) (*updateResult, error) {
 		lines = compsText(cs)
 	}
 	if n < 5 {
-		dbg := filepath.Join(dataDir, src+"_debug.html")
-		os.WriteFile(dbg, body, 0o644)
-		return nil, fmt.Errorf("덱을 %d개만 찾았습니다. 페이지 구조가 바뀐 듯합니다 (data/%s_debug.html 저장됨 — 채팅에 첨부해 주세요)", n, src)
+		writeDebug(src+"_debug.html", body)
+		return nil, fmt.Errorf("덱을 %d개만 찾았습니다. 페이지 구조가 바뀐 듯합니다 (data/debug/%s_debug.html 저장됨 — 채팅에 첨부해 주세요)", n, src)
 	}
 	source := label + " · " + time.Now().Format("2006-01-02")
 	text := "# source: " + source + "\n" + lines
@@ -880,29 +891,50 @@ func updateMetatft(client *http.Client, pageHTML string) ([]labsComp, error) {
 		add(g)
 	}
 	logf("MetaTFT: API 후보 %d개", len(candidates))
-	// 2) 후보 호출 → 덱 추출
+	// 2) 후보 호출 → 덱 추출. 모든 후보의 응답 요약을 data/debug/metatft_api.txt 에 남긴다.
 	var lastErr string
+	var report strings.Builder
 	for i, u := range candidates {
-		if i >= 8 {
+		if i >= 14 {
 			break
 		}
 		b, code, err := httpGet(client, u)
 		if err != nil {
 			lastErr = err.Error()
+			fmt.Fprintf(&report, "### %d %s\nERR %s\n\n", i, u, err.Error())
 			continue
+		}
+		head := string(b)
+		if len(head) > 1500 {
+			head = head[:1500]
+		}
+		fmt.Fprintf(&report, "### %d %s\nHTTP %d, %d bytes\n%s\n\n", i, u, code, len(b), head)
+		if code == 200 && len(b) >= 200 && len(b) < 3<<20 {
+			writeDebug(fmt.Sprintf("metatft_api_%d.json", i), b)
 		}
 		if code != 200 || len(b) < 200 {
 			lastErr = fmt.Sprintf("%s → %d", u, code)
 			continue
 		}
+		if strings.Contains(strings.ToLower(u), "unit_items") {
+			continue // 유닛-아이템 통계 API: 덱이 아님
+		}
 		cs := extractCompsFromJSON(string(b))
-		logf("MetaTFT: %s → %d바이트, 덱 %d", u, len(b), len(cs))
-		if len(cs) >= 5 {
-			os.WriteFile(filepath.Join(dataDir, "metatft_api_last.json"), b, 0o644)
+		named := 0
+		for _, c := range cs {
+			if !strings.HasPrefix(c.Name, "덱 ") {
+				named++
+			}
+		}
+		logf("MetaTFT: %s → %d바이트, 덱 %d(이름 있음 %d)", u, len(b), len(cs), named)
+		if len(cs) >= 5 && named*3 >= len(cs) {
+			writeDebug("metatft_api_last.json", b)
+			writeDebug("metatft_api.txt", []byte(report.String()))
 			return cs, nil
 		}
 	}
-	return nil, fmt.Errorf("MetaTFT 데이터를 찾지 못했습니다 (%s). data/metatft_last.html 을 채팅에 첨부해 주세요.", lastErr)
+	writeDebug("metatft_api.txt", []byte(report.String()))
+	return nil, fmt.Errorf("MetaTFT 덱 데이터를 찾지 못했습니다 (%s). data/debug/metatft_api.txt 를 확인해 주세요.", lastErr)
 }
 
 // JSON 텍스트에서 TFT18_ 유닛 묶음 + 근처 이름/티어로 덱 추출
