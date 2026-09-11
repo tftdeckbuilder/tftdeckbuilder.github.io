@@ -34,14 +34,16 @@ jobs:
         env:
           TFT_BROWSER: /usr/bin/google-chrome
         run: |
-          ./tftdeck -update all -data data || echo "::warning::일부 출처 업데이트 실패 — data/tftdeck.log 확인"
+          ./tftdeck -update all -data data || echo "::warning::일부 출처 업데이트 실패 — data/debug 폴더와 로그 확인"
           echo "---- 로그 ----"; tail -n 30 data/tftdeck.log || true
+          ls -la data/debug || true
 
       - name: 변경 사항 커밋
         run: |
           git config user.name "meta-updater"
           git config user.email "actions@users.noreply.github.com"
           git add data/meta.txt data/meta_metatft.txt data/meta_tftlabs.txt
+          git add -A data/debug 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "변경 없음"
           else
