@@ -1,0 +1,8 @@
+# 업데이트 프로그램이 남기는 디버그 파일·로그 (사이트에 필요 없음)
+data/*_last.html
+data/*_dom.html
+data/*_debug.html
+data/tftdeck.log
+tftdeck
+tftdeck.exe
+updater/index.html

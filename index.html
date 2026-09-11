@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>세트 18 덱 빌더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F5EE; --panel:#FFFFFF; --panel2:#E8EEE3; --ink:#1B2420; --muted:#5F6D64; --line:#D3DBD0;
+  --accent:#2F6F4E; --accent-ink:#FFFFFF; --accent-soft:#DCEBE1; --gold:#B8892C; --gold-soft:#F6EDD6;
+  --c1:#76857C; --c2:#3E8E5B; --c3:#2F6FB3; --c4:#8A4FBF; --c5:#C99A2E;
+  --pin:#2F6F4E; --ban:#B04A3A; --ban-soft:#F5E1DD;
+  --shadow:0 1px 2px rgba(20,40,30,.06), 0 4px 14px rgba(20,40,30,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121915; --panel:#1A2420; --panel2:#223029; --ink:#E5ECE4; --muted:#94A398; --line:#2E3D34;
+    --accent:#6CC392; --accent-ink:#0F1A14; --accent-soft:#1F3A2C; --gold:#E2B85A; --gold-soft:#3A2F17;
+    --c1:#8F9C94; --c2:#5BC27C; --c3:#5D9EE6; --c4:#B07FE0; --c5:#F0BE4E;
+    --pin:#6CC392; --ban:#E27A68; --ban-soft:#3D2420;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121915; --panel:#1A2420; --panel2:#223029; --ink:#E5ECE4; --muted:#94A398; --line:#2E3D34;
+  --accent:#6CC392; --accent-ink:#0F1A14; --accent-soft:#1F3A2C; --gold:#E2B85A; --gold-soft:#3A2F17;
+  --c1:#8F9C94; --c2:#5BC27C; --c3:#5D9EE6; --c4:#B07FE0; --c5:#F0BE4E;
+  --pin:#6CC392; --ban:#E27A68; --ban-soft:#3D2420;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.mono{font-family:"IBM Plex Mono","D2Coding",Consolas,monospace;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── header ── */
+.top{display:flex;align-items:baseline;gap:16px;padding:18px 24px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+.top h1{margin:0;font-family:"Noto Serif KR","Noto Sans KR",serif;font-weight:600;font-size:22px;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-size:13px}
+.top .sub b{color:var(--gold);font-weight:500}
+.top .spacer{flex:1}
+.top .meta{color:var(--muted);font-size:12px;letter-spacing:.04em}
+
+/* ── layout ── */
+.app{display:grid;grid-template-columns:292px minmax(0,1fr) 400px;gap:18px;padding:18px 24px 48px;max-width:1600px;margin:0 auto}
+@media (min-width:1181px){.settings,.results{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow-y:auto}}
+@media (max-width:1180px){.app{grid-template-columns:280px minmax(0,1fr)}.results{grid-column:1 / -1}}
+@media (max-width:760px){.app{grid-template-columns:1fr;padding:14px}.results{grid-column:auto}.top{flex-wrap:wrap;gap:4px 12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+.sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sec h2{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:30px}
+.row + .row{margin-top:4px}
+.row label{display:flex;align-items:center;gap:8px}
+.hint{color:var(--muted);font-size:12px;margin:6px 0 0;line-height:1.5}
+.hint.warn{color:var(--ban)}
+
+/* segmented */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel2)}
+.seg button{border:0;background:transparent;padding:6px 12px;color:var(--muted);font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg button + button{border-left:1px solid var(--line)}
+.seg.wide{display:flex;width:100%}
+.seg.wide button{flex:1;padding:6px 4px;white-space:nowrap;font-size:13px}
+
+/* switch */
+.sw{position:relative;width:36px;height:20px;border-radius:20px;background:var(--line);border:0;padding:0;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.sw[aria-checked="true"]{background:var(--accent)}
+.sw[aria-checked="true"]::after{transform:translateX(16px)}
+.sw:disabled{opacity:.45;cursor:not-allowed}
+select.sm,input.num{border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:4px 6px;font-size:13px}
+input.num{width:64px;text-align:right}
+.wgrid{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-size:13px}
+.wgrid .k{color:var(--muted)}
+.costw{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.costw label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);align-items:stretch}
+.costw input.num{width:100%;text-align:center}
+details.adv summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:8px}
+details.adv .wgrid{margin-top:8px}
+.wgrid.tw{grid-template-columns:1fr auto 1fr auto;column-gap:8px}
+.wgrid.tw input.num{width:52px}
+.q{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line);font-size:10px;color:var(--muted);cursor:help;margin-left:2px;vertical-align:1px}
+.reqadd{display:grid;grid-template-columns:1fr auto auto;gap:6px}
+.mini{border:1px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:5px;padding:4px 10px;font-size:13px;font-weight:500}
+.chip.req{border-color:var(--gold);background:var(--gold-soft)}
+.chip.req .n{font-family:"IBM Plex Mono",monospace;font-weight:500}
+.tt.req{box-shadow:0 0 0 2px var(--gold) inset}
+.tu.lone{border-style:dashed;opacity:.75}
+.tu.emb{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
+.tu .embtag{background:var(--gold);color:#1B2420;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:2px;letter-spacing:.02em}
+.chip.emb{border-color:var(--gold);background:var(--gold-soft)}
+.chip.emb .cnt{font-family:"IBM Plex Mono",monospace;font-weight:500;margin-left:2px}
+.chip.emb .pm{border:1px solid var(--line);background:var(--panel);border-radius:4px;width:18px;height:18px;line-height:1;padding:0;font-size:13px;color:var(--ink)}
+.chip.emb .pm:hover{border-color:var(--gold)}
+.holders{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0 8px}
+.holders .hl{font-size:12px;color:var(--muted);width:100%}
+.holders select{border:1px solid var(--line);border-radius:5px;background:var(--panel);font-size:12px;padding:2px 4px}
+
+.run{width:100%;border:0;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;padding:12px;letter-spacing:.02em}
+.run:disabled{opacity:.6;cursor:wait}
+.pins{display:flex;flex-wrap:wrap;gap:6px;min-height:24px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 6px;border-radius:5px;font-size:12px;border:1px solid var(--line);background:var(--panel2)}
+.chip.pin{border-color:var(--pin);background:var(--accent-soft)}
+.chip.ban{border-color:var(--ban);background:var(--ban-soft)}
+.chip .x{border:0;background:transparent;padding:0;color:var(--muted);line-height:1;font-size:14px}
+.chip .x:hover{color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.k1{background:var(--c1)}.k2{background:var(--c2)}.k3{background:var(--c3)}.k4{background:var(--c4)}.k5{background:var(--c5)}
+
+/* ── roster ── */
+.roster .tools{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.roster .tools input[type=search]{flex:1;min-width:160px;border:1px solid var(--line);border-radius:6px;padding:7px 10px;background:var(--panel)}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block}
+.legend i.p{background:var(--accent-soft);border-color:var(--pin)}
+.legend i.b{background:var(--ban-soft);border-color:var(--ban)}
+.tier{padding:12px 16px 14px;border-bottom:1px solid var(--line)}
+.tier:last-child{border-bottom:0}
+.tier h3{margin:0 0 8px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.tier h3 .n{font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--ink)}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.u{position:relative;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 8px 6px 12px;line-height:1.35;transition:border-color .1s,background .1s;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.u .ubtn{all:unset;display:block;cursor:pointer;text-align:left}
+.u .ubtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.items{display:flex;gap:4px}
+.islot{border:0;background:transparent;padding:0;line-height:0;border-radius:5px;transition:transform .1s}
+.islot:hover{transform:scale(1.15)}
+.it{display:block;border-radius:4px;image-rendering:auto}
+.bisbar{display:flex;align-items:center;gap:10px;width:100%;flex-wrap:wrap}
+.link{border:0;background:transparent;padding:0;color:var(--accent);font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.tuitems{display:inline-flex;gap:2px;margin-left:3px}
+.metabox{border-bottom:1px solid var(--line)}
+.metabox summary{cursor:pointer;padding:11px 16px;display:flex;align-items:center;gap:10px;list-style:none}
+.metabox summary::-webkit-details-marker{display:none}
+.metabox summary::before{content:"▸";color:var(--muted);font-size:12px}
+.metabox[open] summary::before{content:"▾"}
+.metabox summary .ttl{font-weight:700;font-size:13px}
+.metabox summary .n{color:var(--muted);font-size:12px}
+.metabox summary .src{margin-left:auto;color:var(--muted);font-size:11.5px}
+.metatools{display:flex;gap:8px;align-items:center;padding:0 16px 10px;flex-wrap:wrap}
+.metatools input[type=search]{flex:1;min-width:140px;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--panel);font-size:13px}
+.metatools .seg button{padding:5px 10px;font-size:12.5px}
+#srcSeg button{font-size:12px;padding:5px 8px}
+.upd{padding:0 16px 12px}
+.upd textarea{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:8px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;resize:vertical}
+.updbtns{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.deck{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;padding:9px 16px;border-top:1px solid var(--line);align-items:start}
+.deck.hide{display:none}
+.deck .tb{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;background:var(--c1);margin-top:1px}
+.deck .tb.S{background:#C0392B}.deck .tb.A{background:#B8892C}.deck .tb.B{background:#2F6FB3}.deck .tb.C{background:#76857C}
+.deck .dn{font-weight:600;font-size:13px}
+.deck .dn small{color:var(--muted);font-weight:400;margin-left:6px;font-size:11px}
+.deck .du{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.deck .du span{font-size:11.5px;padding:1px 6px 1px 4px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:4px}
+.deck .du span i{width:6px;height:6px;border-radius:50%;background:var(--cc);display:inline-block}
+.deck .du span.unk{border-style:dashed;color:var(--ban)}
+.deck .ds{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.deck .ds span{font-size:11px;color:var(--muted);padding:0 5px;border-radius:3px;background:var(--gold-soft)}
+.deck .da{display:flex;flex-direction:column;gap:4px}
+.deck .da button{border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:3px 9px;font-size:12px;white-space:nowrap}
+.deck .da button:hover{border-color:var(--accent);background:var(--accent-soft)}
+.codebtn{margin-left:8px;border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:2px 8px;font-size:11.5px;white-space:nowrap}
+.codebtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.codein{display:flex;gap:6px;width:100%}
+.codein input{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--panel);font-family:"IBM Plex Mono",monospace;font-size:12px}
+.codebox{position:fixed;left:50%;top:40%;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 36px rgba(0,0,0,.3);padding:12px;z-index:70}
+.codebox .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.codebox .ph .x{margin-left:auto;border:0;background:transparent;font-size:16px;color:var(--muted)}
+.codebox input{width:100%;border:1px solid var(--accent);border-radius:6px;padding:8px 10px;font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--panel2)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.tuitems span{line-height:0}
+.picker{position:fixed;z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:10px}
+.picker .ph{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px}
+.picker .ph .x{margin-left:auto;border:0;background:transparent;font-size:16px;color:var(--muted);padding:0 4px}
+.picker .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:3px;max-height:50vh;overflow:auto}
+.pi{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 5px;font-size:11.5px;text-align:left;white-space:nowrap}
+.pi:hover{background:var(--panel2)}
+.pi.cur{border-color:var(--accent);background:var(--accent-soft)}
+.u::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:6px 0 0 6px;background:var(--cc)}
+.u:hover{border-color:var(--accent)}
+.u .nm{font-weight:500;font-size:13px;display:flex;justify-content:space-between;gap:6px}
+.u.ban .items{opacity:.5}
+.u .nm .tag{font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap}
+.u .tr{font-size:11px;color:var(--muted);margin-top:2px}
+.u.pin{background:var(--accent-soft);border-color:var(--pin)}
+.u.ban{background:var(--ban-soft);border-color:var(--ban)}
+.u.ban .nm,.u.ban .tr{text-decoration:line-through;opacity:.7}
+.u.off{opacity:.45}
+.u.off:hover{opacity:.8}
+.u.hide{display:none}
+
+/* ── results ── */
+.results .head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+.results .head h2{margin:0;font-size:14px}
+.results .head .st{color:var(--muted);font-size:12px}
+.empty{padding:28px 16px;color:var(--muted);text-align:center;font-size:13px;line-height:1.7}
+.team{padding:14px 16px;border-bottom:1px solid var(--line)}
+.team:last-child{border-bottom:0}
+.team .th{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.team .rank{font-family:"Noto Serif KR",serif;font-weight:600;font-size:18px;color:var(--gold);min-width:22px}
+.team .score{font-family:"IBM Plex Mono",monospace;font-size:18px;font-weight:500}
+.team .score small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px}
+.team .costsum{margin-left:auto;font-size:12px;color:var(--muted)}
+.team .costsum b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:500}
+.tunits{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.tu{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);font-size:12.5px;font-weight:500}
+.tu.pinned{border-color:var(--pin)}
+.tu .cbox{width:14px;height:14px;border-radius:3px;background:var(--cc);color:#fff;font-size:9px;font-family:"IBM Plex Mono",monospace;display:inline-flex;align-items:center;justify-content:center;font-weight:500}
+.tu .sub{color:var(--muted);font-weight:400;font-size:11px}
+.traits{display:flex;flex-wrap:wrap;gap:4px 6px;margin-bottom:8px}
+.tt{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 7px;border-radius:4px;border:1px solid var(--line);background:var(--panel)}
+.tt.on{background:var(--gold-soft);border-color:var(--gold);color:var(--ink)}
+.tt.uniq{background:var(--accent-soft);border-color:var(--accent)}
+.tt.off{color:var(--muted);border-style:dashed}
+.tt .n{font-family:"IBM Plex Mono",monospace;font-weight:500}
+.tt .pips{display:inline-flex;gap:2px;margin-left:2px}
+.tt .pips i{width:5px;height:5px;border-radius:1px;background:var(--line);display:inline-block}
+.tt.on .pips i.f{background:var(--gold)}
+.breakdown{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;font-family:"IBM Plex Mono",monospace}
+.breakdown span b{color:var(--ink);font-weight:500}
+.eclipse{font-size:11.5px;color:var(--gold);font-weight:500}
+.foot{padding:10px 16px;color:var(--muted);font-size:11.5px;line-height:1.6;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>세트 18 덱 빌더</h1>
+  <span class="sub">고정 유닛을 포함해 <b>코스트</b>와 <b>시너지</b>를 함께 최대화하는 팀 구성</span>
+  <span class="spacer"></span>
+  <span class="meta mono" id="meta"></span>
+</header>
+
+<div class="app">
+  <!-- ── settings ── -->
+  <aside class="card settings">
+    <div class="sec">
+      <h2>팀 크기</h2>
+      <div class="row">
+        <span>레벨 / 슬롯</span>
+        <div class="seg" id="sizeSeg" role="group" aria-label="팀 크기">
+          <button type="button" data-size="7" aria-pressed="false">7</button>
+          <button type="button" data-size="8" aria-pressed="true">8</button>
+          <button type="button" data-size="9" aria-pressed="false">9</button>
+          <button type="button" data-size="10" aria-pressed="false">10</button>
+        </div>
+      </div>
+      <p class="hint">장로 드래곤은 슬롯 2개를 차지합니다. 협곡야수 10단계는 계산하지 않습니다.</p>
+    </div>
+
+    <div class="sec">
+      <h2>고정 유닛</h2>
+      <div class="pins" id="pinList"><span class="hint" style="margin:0">오른쪽 목록에서 유닛을 클릭하면 고정됩니다. 한 번 더 클릭하면 제외, 다시 클릭하면 해제.</span></div>
+    </div>
+
+    <div class="sec">
+      <h2>필수 시너지</h2>
+      <div class="reqadd">
+        <select class="sm" id="reqTrait" aria-label="특성"></select>
+        <select class="sm" id="reqTier" aria-label="단계"></select>
+        <button type="button" class="mini" id="reqAdd">추가</button>
+      </div>
+      <div class="pins" id="reqList" style="margin-top:8px"></div>
+      <p class="hint">여기 지정한 특성은 반드시 그 단계 이상으로 채운 팀만 결과에 올립니다. 나머지 슬롯은 아래 가중치 기준으로 가장 좋게 채웁니다.</p>
+    </div>
+
+    <div class="sec">
+      <h2>상징</h2>
+      <div class="reqadd">
+        <select class="sm" id="embTrait" aria-label="상징 특성"></select>
+        <input class="num" type="number" id="embN" min="1" max="10" step="1" value="1" aria-label="개수" title="개수" style="width:52px">
+        <button type="button" class="mini" id="embAdd">추가</button>
+      </div>
+      <div class="pins" id="embList" style="margin-top:8px"></div>
+      <div class="row" style="margin-top:6px">
+        <label for="swEmbRec">추천 유닛에게만 <span class="hint" style="margin:0">(통계상 상징 주기 좋은 유닛)</span></label>
+        <button type="button" class="sw" id="swEmbRec" role="switch" aria-checked="true" aria-label="추천 유닛에게만"></button>
+      </div>
+      <details class="adv" id="embEdit" hidden>
+        <summary>상징별 추천 유닛 편집</summary>
+        <div id="embHolders"></div>
+      </details>
+      <p class="hint">보유한 상징을 추가하면 그 상징을 받을 유닛이 반드시 팀에 들어가고, 해당 특성이 상징 개수만큼 +로 계산됩니다. 같은 상징을 여러 개 넣으면(예: 주문술사 ×2) 서로 다른 유닛에게 하나씩 갑니다. 결과에서 상징을 줄 유닛에 <b>상징</b> 표시가 붙습니다.</p>
+    </div>
+
+    <div class="sec">
+      <h2>특수 유닛 · 히든 시너지</h2>
+      <div class="row">
+        <label for="swLux">럭스 후보 포함</label>
+        <button type="button" class="sw" id="swLux" role="switch" aria-checked="false" aria-label="럭스 후보 포함"></button>
+      </div>
+      <div class="row" id="luxRow" hidden>
+        <span style="color:var(--muted);font-size:12px;padding-left:12px">럭스 계열</span>
+        <select class="sm" id="luxOrigin" aria-label="럭스 계열 선택"></select>
+      </div>
+      <div class="row">
+        <label for="swKha">카직스 후보 포함 <span class="hint" style="margin:0">(진화 완료 가정)</span></label>
+        <button type="button" class="sw" id="swKha" role="switch" aria-checked="false" aria-label="카직스 후보 포함"></button>
+      </div>
+      <div class="row">
+        <label for="swRen">렝가 후보 포함</label>
+        <button type="button" class="sw" id="swRen" role="switch" aria-checked="false" aria-label="렝가 후보 포함"></button>
+      </div>
+      <div class="row">
+        <label for="swRivalBoth">경쟁자 동시 배치 <span class="hint" style="margin:0">(일인자 증강)</span></label>
+        <button type="button" class="sw" id="swRivalBoth" role="switch" aria-checked="false" aria-label="카직스 렝가 동시 허용"></button>
+      </div>
+      <div class="row">
+        <label for="swEcl">일월식 (햇빛 3 + 달빛 3)</label>
+        <button type="button" class="sw" id="swEcl" role="switch" aria-checked="false" aria-label="일월식"></button>
+      </div>
+      <p class="hint">카직스와 렝가는 기본적으로 한 팀에 같이 들어갈 수 없습니다(경쟁자 2단계는 '일인자' 증강 필요). 후보로 포함해도 점수상 이득이 없으면 팀에 들어가지 않을 수 있으니, 반드시 넣으려면 목록에서 고정하세요.</p>
+    </div>
+
+    <div class="sec">
+      <h2>가중치</h2>
+      <div style="margin-bottom:10px">
+        <div class="seg wide" id="presetSeg" role="group" aria-label="가중치 프리셋">
+          <button type="button" data-preset="value" aria-pressed="false">고밸류</button>
+          <button type="button" data-preset="balanced" aria-pressed="true">균형</button>
+          <button type="button" data-preset="synergy" aria-pressed="false">알찬 시너지</button>
+        </div>
+      </div>
+      <div class="costw" id="costW">
+        <label>1코<input class="num" type="number" step="0.5" data-cost="1" value="1"></label>
+        <label>2코<input class="num" type="number" step="0.5" data-cost="2" value="2"></label>
+        <label>3코<input class="num" type="number" step="0.5" data-cost="3" value="3"></label>
+        <label>4코<input class="num" type="number" step="0.5" data-cost="4" value="5"></label>
+        <label>5코<input class="num" type="number" step="0.5" data-cost="5" value="8"></label>
+      </div>
+      <div class="wgrid" style="margin-top:10px">
+        <span class="k">시너지 단계당 점수</span><input class="num" type="number" step="0.5" id="wSyn" value="3">
+        <span class="k">활성 시너지 참여 유닛당 <span class="q" title="활성 특성에 이름을 올린 (유닛, 특성) 쌍마다 가산. 5개화면 5, 1치명적인 꽃이면 1.">?</span></span><input class="num" type="number" step="0.25" id="wUtil" value="0.5">
+        <span class="k">무소속 유닛 감점 <span class="q" title="활성 특성이 하나도 없는 유닛 1명당 감점">?</span></span><input class="num" type="number" step="0.5" id="wOrphanUnit" value="2">
+        <span class="k">미활성 특성 감점 (개당)</span><input class="num" type="number" step="0.5" id="wOrphan" value="0.5">
+        <span class="k">고유 특성 유닛당 점수</span><input class="num" type="number" step="0.5" id="wUniq" value="1">
+        <span class="k">일월식 보너스</span><input class="num" type="number" step="1" id="wEcl" value="6">
+      </div>
+      <details class="adv">
+        <summary>특성별 가중치 (시너지 점수에 곱함)</summary>
+        <p class="hint" style="margin:6px 0 0">1명만 있어도 켜지는 특성(치명적인 꽃·경쟁자)은 기본 0.5로 낮춰 두었습니다.</p>
+        <div class="wgrid tw" id="traitW"></div>
+      </details>
+      <details class="adv">
+        <summary>고유 특성 개별 가중치</summary>
+        <div class="wgrid" id="uniqW"></div>
+      </details>
+      <details class="adv">
+        <summary>탐색 설정</summary>
+        <div class="wgrid">
+          <span class="k">빔 폭</span><input class="num" type="number" step="50" min="50" max="3000" id="beamW" value="400">
+          <span class="k">결과 개수</span><input class="num" type="number" step="1" min="1" max="20" id="nRes" value="5">
+        </div>
+      </details>
+    </div>
+
+    <div class="sec">
+      <button type="button" class="run" id="runBtn">팀 구성</button>
+      <p class="hint" id="runMsg"></p>
+    </div>
+  </aside>
+
+  <!-- ── roster ── -->
+  <section class="card roster">
+    <div class="tools">
+      <input type="search" id="q" placeholder="유닛 · 특성 검색 (예: 개화, 아리)" aria-label="유닛 검색">
+      <div class="legend"><span><i class="p"></i>고정</span><span><i class="b"></i>제외</span></div>
+      <div class="codein"><input type="text" id="codeIn" placeholder="팀 코드 붙여넣기 (02…TFTSet18)" aria-label="팀 코드" spellcheck="false"><button type="button" class="mini" id="codeLoad">불러오기</button></div>
+      <div class="bisbar"><span class="hint" style="margin:0">삼신기: lolchess.gg 세트 18 (8/31) 기준 — 아이콘을 눌러 교체</span><button type="button" class="link" id="bisCopy">삼신기 목록 복사</button><button type="button" class="link" id="bisReset">초기화</button><button type="button" class="link" id="bisSave" hidden>삼신기·상징 설정 저장</button><span class="hint" id="bisMsg" style="margin:0"></span></div>
+    </div>
+    <details class="metabox" id="metaBox">
+      <summary><span class="ttl">메타 덱</span><span class="n mono" id="metaCount"></span><span class="src" id="metaSrc"></span></summary>
+      <div class="metatools">
+        <div class="seg" id="tierSeg" role="group" aria-label="티어 필터">
+          <button type="button" data-t="all" aria-pressed="true">전체</button><button type="button" data-t="S" aria-pressed="false">S</button><button type="button" data-t="A" aria-pressed="false">A</button><button type="button" data-t="B" aria-pressed="false">B</button><button type="button" data-t="C" aria-pressed="false">C</button>
+        </div>
+        <div class="seg" id="srcSeg" role="group" aria-label="출처">
+          <button type="button" data-s="metatft" aria-pressed="true">MetaTFT</button><button type="button" data-s="tftlabs" aria-pressed="false">tftlabs</button><button type="button" data-s="tftactics" aria-pressed="false">tftactics</button>
+        </div>
+        <input type="search" id="metaQ" placeholder="덱 · 유닛 검색" aria-label="메타 덱 검색">
+        <button type="button" class="mini" id="metaUpdBtn">업데이트</button>
+      </div>
+      <div class="upd" id="metaUpd" hidden>
+        <p class="hint" style="margin:0 0 6px">이 페이지는 외부 사이트에 직접 접속할 수 없어서, 최신 메타는 <b>채팅에서 "메타 덱 업데이트"</b>라고 요청하거나 아래에 한 줄에 한 덱씩 붙여넣어 적용합니다(exe 버전은 자동 업데이트 버튼). 위에서 고른 출처(op.gg / tftactics)에 적용됩니다. 형식: <code>티어 | 덱 이름 | 유닛, 유닛, … | 메모</code> (유닛은 한글·영문 모두 가능, 메모는 선택)</p>
+        <textarea id="metaText" rows="8" spellcheck="false"></textarea>
+        <div class="updbtns">
+          <button type="button" class="mini" id="metaFetch" hidden>전체 출처 자동 업데이트</button>
+          <button type="button" class="mini" id="metaApply">적용</button>
+          <button type="button" class="mini" id="metaSave" hidden>이 페이지에 저장</button>
+          <span class="hint" id="metaMsg" style="margin:0"></span>
+        </div>
+      </div>
+      <div id="metaList"></div>
+    </details>
+    <div id="roster"></div>
+  </section>
+
+  <!-- ── results ── -->
+  <section class="card results">
+    <div class="head"><h2>추천 팀</h2><span class="st" id="stat"></span></div>
+    <div id="out"><div class="empty">고정할 유닛을 고르고 <b>팀 구성</b>을 누르세요.<br>고정 없이 실행하면 설정 기준 최고 점수 팀을 찾습니다.</div></div>
+    <div class="foot">score = Σ 코스트 점수 + Σ(시너지 단계 × 단계당 점수 × 특성 가중치) + 참여 유닛 점수 + 고유 특성 점수 + 일월식 − 무소속 유닛 감점 − 미활성 특성 감점. 필수 시너지는 점수가 아니라 제약으로 적용. 점선 유닛 = 활성 시너지가 없는 무소속 유닛. 데이터: 세트 18 (2026-08-31 기준).</div>
+  </section>
+</div>
+
+<script>
+/* ═══════════════════ 데이터 ═══════════════════ */
+const ORIGIN_BP = {
+  '개화':[3,5,7,9,11], '검은 가시':[2,4,6], '경쟁자':[1,2], '나무정령':[3,5,7,9,11], '날렵이':[3,5,7],
+  '달빛':[2,3,4,5], '악의 여단':[3,4,5,7], '요정':[2,4], '원시':[2,4], '지옥불':[2,3,5,7],
+  '치명적인 꽃':[1,2], '햇빛':[3], '협곡야수':[3,5,7]
+};
+const CLASS_BP = {
+  '기원자':[2,3,4,5], '사냥꾼':[2,3,4,5], '선봉대':[2,4,6], '소환사':[2,3], '속사포':[2,3,4,5],
+  '싸움꾼':[2,4,6], '약탈자':[2,4,6], '엄호대':[2,4,6], '적응가':[2,3,4], '전쟁기계':[2,4,6],
+  '주문술사':[2,4,6], '처형자':[2,3,4]
+};
+const UNIQUE_TRAITS = ['거석','고목','부식','에메랄드 성위','가시의 여인','자연의 아버지','조율','최상위 포식자','현상금 추적자','화신'];
+const LUX_ORIGINS = ['개화','검은 가시','나무정령','달빛','악의 여단','요정','원시','지옥불','햇빛'];
+
+// [id, 한글명, 영문명, 코스트, 특성...]  — 특수 유닛은 special 필드로 별도 처리
+const UNITS = [
+  ['rakan','라칸','Rakan',1,'요정','전쟁기계','선봉대'],
+  ['leona','레오나','Leona',1,'햇빛','엄호대'],
+  ['reksai','렉사이',"Rek'Sai",1,'검은 가시','싸움꾼'],
+  ['varus','바루스','Varus',1,'지옥불','속사포'],
+  ['veigar','베이가','Veigar',1,'검은 가시','날렵이','주문술사'],
+  ['cinderling','불타는 묘목','Cinderling',1,'협곡야수','사냥꾼'],
+  ['akali','아칼리','Akali',1,'지옥불','적응가','약탈자'],
+  ['ornn','오른','Ornn',1,'나무정령','엄호대'],
+  ['yorick','요릭','Yorick',1,'개화','전쟁기계','소환사'],
+  ['xayah','자야','Xayah',1,'나무정령','요정','속사포'],
+  ['pebbles','조약돌','Pebbles',1,'협곡야수','기원자'],
+  ['karma','카르마','Karma',1,'개화','주문술사'],
+  ['camille','카밀','Camille',1,'악의 여단','약탈자'],
+  ['kobuko','코부코','Kobuko',1,'날렵이','싸움꾼'],
+
+  ['leblanc','르블랑','LeBlanc',2,'나무정령','주문술사'],
+  ['scuttle','바위 게','Scuttlecrab',2,'협곡야수','전쟁기계'],
+  ['sejuani','세주아니','Sejuani',2,'햇빛','전쟁기계'],
+  ['shen','쉔','Shen',2,'지옥불','엄호대'],
+  ['gromp','심술두꺼비','Gromp',2,'협곡야수','적응가'],
+  ['alistar','알리스타','Alistar',2,'나무정령','싸움꾼'],
+  ['murkwolf','어스름 늑대','Murkwolf',2,'협곡야수','약탈자'],
+  ['elise','엘리스','Elise',2,'악의 여단','선봉대'],
+  ['warwick','워윅','Warwick',2,'검은 가시','약탈자'],
+  ['yunara','유나라','Yunara',2,'개화','처형자'],
+  ['caitlyn','케이틀린','Caitlyn',2,'악의 여단','사냥꾼'],
+  ['kayle','케일','Kayle',2,'햇빛','속사포'],
+  ['teemo','티모','Teemo',2,'날렵이','기원자'],
+
+  ['diana','다이애나','Diana',3,'달빛','약탈자','선봉대'],
+  ['krug','돌거북','Krug',3,'협곡야수','싸움꾼'],
+  ['rammus','람머스','Rammus',3,'날렵이','엄호대'],
+  ['rengar','렝가','Rengar',3,'경쟁자'],
+  ['masteryi','마스터 이','Master Yi',3,'개화','적응가'],
+  ['vi','바이','Vi',3,'원시','전쟁기계'],
+  ['azir','아지르','Azir',3,'검은 가시','처형자','소환사'],
+  ['cassiopeia','카시오페아','Cassiopeia',3,'악의 여단','주문술사'],
+  ['khazix','카직스',"Kha'Zix",3,'경쟁자','약탈자','속사포','주문술사','처형자'],
+  ['raptor','어미 부리','Mama Beak',3,'협곡야수','소환사','속사포'],
+  ['kogmaw','코그모',"Kog'Maw",3,'부식','기원자','적응가'],
+  ['tristana','트리스타나','Tristana',3,'요정','날렵이','사냥꾼'],
+  ['fiddle','피들스틱','Fiddlesticks',3,'치명적인 꽃','엄호대','주문술사'],
+  ['hecarim','헤카림','Hecarim',3,'나무정령','선봉대'],
+
+  ['sentinel','감시자','Ancient Sentinel',4,'협곡야수','선봉대','기원자'],
+  ['nidalee','니달리','Nidalee',4,'원시','적응가'],
+  ['bramble','덩굴정령','Brambleback',4,'협곡야수','약탈자'],
+  ['lillia','릴리아','Lillia',4,'요정','엄호대'],
+  ['malphite','말파이트','Malphite',4,'검은 가시','거석'],
+  ['morgana','모르가나','Morgana',4,'악의 여단','기원자'],
+  ['sett','세트','Sett',4,'개화','싸움꾼'],
+  ['soraka','소라카','Soraka',4,'치명적인 꽃','처형자'],
+  ['sivir','시비르','Sivir',4,'원시','사냥꾼'],
+  ['ahri','아리','Ahri',4,'개화','주문술사'],
+  ['amumu','아무무','Amumu',4,'지옥불','전쟁기계'],
+  ['aphelios','아펠리오스','Aphelios',4,'달빛','속사포'],
+  ['ezreal','이즈리얼','Ezreal',4,'나무정령','처형자'],
+  ['zyra','자이라','Zyra',4,'가시의 여인','소환사'],
+
+  ['gnar','나르','Gnar',5,'나무정령','날렵이','싸움꾼'],
+  ['draven','드레이븐','Draven',5,'현상금 추적자'],
+  ['lux','럭스','Lux',5,'화신'],
+  ['maokai','마오카이','Maokai',5,'고목','전쟁기계'],
+  ['ivern','아이번','Ivern',5,'자연의 아버지'],
+  ['alune','알룬','Alune',5,'조율','달빛','주문술사'],
+  ['ashe','애쉬','Ashe',5,'개화','사냥꾼'],
+  ['elder','장로 드래곤','The Elder Dragon',5,'협곡야수','협곡야수','최상위 포식자'],
+  ['kennen','케넨','Kennen',5,'지옥불','처형자'],
+  ['taric','타릭','Taric',5,'에메랄드 성위','선봉대'],
+];
+/* ═══════════════════ 아이템 (삼신기) ═══════════════════ */
+// 완성 아이템: 이름 → [재료1, 재료2]  (lolchess.gg 조합표 기준)
+const ITEMS = {"죽음의 검": ["검", "검"], "거인 학살자": ["검", "곡궁"], "밤의 끝자락": ["검", "조끼"], "피바라기": ["검", "망토"], "헥스테크 총검": ["검", "지팡이"], "쇼진의 창": ["검", "눈물"], "스테락의 도전": ["검", "허리띠"], "무한의 대검": ["검", "장갑"], "붉은 덩굴정령": ["곡궁", "곡궁"], "티탄의 결의": ["곡궁", "조끼"], "루난의 허리케인": ["곡궁", "망토"], "구인수의 격노검": ["곡궁", "지팡이"], "스태틱 단검": ["곡궁", "눈물"], "밤의 수확자": ["곡궁", "허리띠"], "최후의 속삭임": ["곡궁", "장갑"], "가시 갑옷": ["조끼", "조끼"], "가고일 돌갑옷": ["조끼", "망토"], "크라운가드": ["조끼", "지팡이"], "수호자의 맹세": ["조끼", "눈물"], "태양불꽃 망토": ["조끼", "허리띠"], "굳건한 심장": ["조끼", "장갑"], "드래곤의 발톱": ["망토", "망토"], "이온 충격기": ["망토", "지팡이"], "적응형 투구": ["망토", "눈물"], "저녁갑주": ["망토", "허리띠"], "정적의 장막": ["망토", "장갑"], "라바돈의 죽음모자": ["지팡이", "지팡이"], "대천사의 지팡이": ["지팡이", "눈물"], "모렐로노미콘": ["지팡이", "허리띠"], "보석 건틀릿": ["지팡이", "장갑"], "푸른 파수꾼": ["눈물", "눈물"], "구원": ["눈물", "허리띠"], "정의의 손길": ["눈물", "장갑"], "워모그의 갑옷": ["허리띠", "허리띠"], "수호자의 힘": ["허리띠", "장갑"], "도적의 장갑": ["장갑", "장갑"], "검은 가시 상징(추정)": ["뒤집개", "?"]};
+// 아이템 아이콘 (lolchess.gg 스크린샷에서 추출, 40px WebP)
+const ITEM_IMG = {
+  "죽음의 검": "data:image/webp;base64,UklGRngDAABXRUJQVlA4IGwDAAAwEACdASooACgAPk0gjEQioiEXHAcwKATEtgBOmUI5h8p/ID2Iqz/efvZu7RYuyKc7twtEA/ZnrQ/QA8t32Tf2x9J2sO8ufq8/K3L1tgwTo4+own0knWN2tFw+70ZP2KfQaa+2SAHrpM0lUSbQ25Tp/F6Pw5ogRs/SpWvB3DjBPsafYuDIp8SZOAAA/ogYU10l8nBS1vU1lJhDGeV4R/FPfxSn6Eb3Tn6P8eVCT08zNaKkO5B6+Rf4vykpf9DAQtMTwsIUQcKdsH8OD5PIbiuW3pT5Kwi2P/qe5SVq7V3OUan/NpxIUi+88wopNKHCDvR6//z0TcCPBZjGfWdC6fz+NL64lKvslw/xTNnBaxyzm3pH46n5fe5PTseqitn6EU0VXK0Mo3n99vZwiShcVERSnL/N2cDfyPhp52aaLCtJ4FGvrRVymnDVuwZloYniv4kdPyKOXm9Q7fACQwx1clO4GnSWcHmb48pKn+ISb//tfb2BObqAa+qbje2aGoK5ZewwP22UcC1ndbe40byFnnWItY3MoS6FT0LhW2EHAloXXfwirzAbdhprUrOiNxVo/74gi+KbO5n/iDuRZoJ31//P8EOKDglq/NEnyLkIanfpBRwnWOgr6ljT6r/7CoQJoTngcyDhqrWP+DaUEINWmNZf3/SnRlf7A7XCOrpUavSBPFQ1QXzNzcpTVMnTf08I3jMhtdPlgcxpKUH2BoStFBjrHYz4iN51bBMK7bnA031/5tJ29v1KU4d22cmsB2z0f2E7QjW1ViPLPkOdJjXITZI0gSewQbvsFn95WF6G4/eTBj/GQ4iG1R3Nb5qPKR6Wsa6QQ6bfcxDzm3nK/zvps6eadtH92DPddladubhRkgJXribJI8S2GmHFiX0IsFB2DFLNduL0GXupqO1kLjbHWupg/FM+EgheTDLvlqRteBlbe+eoerVqejOOkEP98ppfxHWgNF5cUraP6FLWoF5x++Mh5disT5b5gd8k+d19yQ5rucxzEnuiW72ZkO+UzMMwG66Q82G8wCl2pkvDirA63+v3ZfNCuuy5/9QoanDTIANRnMx+B0855EUf0/xrW5Yyvo/2gyjpK8+S/fMrkZF7BBqyKaj+K7okMWASgbcYnk/F1IWOaciB5VZ+xvVtjqbkDDiMXGJyzsAs/p9wAAA=",
+  "거인 학살자": "data:image/webp;base64,UklGRooDAABXRUJQVlA4IH4DAACwEgCdASooACgAPlEgi0SjogqrVBwCglsAJ0yhIEPpPmCVV++6wiVOvd6svzTvXvMR+wHrVeg//S+oB/gOoU9ADy3v2j+D/+8/7z0nqxZyz+wT9RMF/mf+Mx6nE7pIJ0r/D8nP1SH8bOUuNss3ERkHLVR5EsIs53Q/dthp4VTmMkxz/LnwcJKAdLVNLADoYKI+CTJm5PRfkh0ugULZAAD+/GDK/Rs/gOsGoGu+mxdfnOJB/oUMKg66BxfiBY3mGbZ/wE7tbb9JI6viPbC0ujC7+bppXilYXJtqFXKwE03bnG5KtLcR9XTmwskHBQP1//WaqcgRj7lI4eO4MceWPfys/cfyx96eix4+zeVUj50pPdxi/CGHBcdvEwX1HDvau9JFYnK45jKEHxzuI0fs2kbRUGNoizfemfOhn6Vr1X0RleoUPpcMt8/u58i/OlBqshUfs2ovAycOZIw384QkBASrO2aGvrB/qQO2R4Mh2J6w77kCEsxseARnGrfK3PvDFrjZTmjkdVzbAsqn3ujiAJf92Eh7MiXtB1O9yaY5FsgyV/FRdSbaZw4Oz6L6tw3g3/2r8oDgTgAbW8h7sx9aq7YD8GKBAYiT+PRrhQZ36kMuD3a1ulB1x9ZLaBwOfjjjCQ+DwHhbNXW3QK99iWUw+/ph36DtZHvTZUz7AvL+t6ygn5SbCvcYBwiEQ/x8V8kX3zCHF4lYIC/IN4AYbsnpqu+U+u5g394BreB81F5PTJNJEByO/+GwzWOcucaDfCuSp/xgrkU1nT4uCB7ybNmcSmz8w98F6+wclt46YYWT3QiUE6d9NOKW19mTLvriDEvWEtx9MN3oNjDlO6a78rwsrT2xbq79GUiSWvt/zwgnWFxZ20qFHcffbAYvB2/oTgHiwjO8hbL/TyVUtAUIWIytVZxVtYXv4HVw+V+/f+QeMF3Nvs6qogei6ziYrH3Yy3YV1v4p6CNPmPbCanSmOn3lpSYZRgYx1BxQQf1eH9Lr2vP76c06mvvJiFRpSx8ODQ3bulemd3UF4PITfNDQTYAYMbaZ6rRmCEHpRZAQTNgkL7iA4grNG+r9nldpd3gEJfkZxePPIUBn/GnP/mOAPMabPLEbzLEu0ze9vedV254BWg7rY2gPmyiBKgIDgVayv5bYAphynjsFUAVZ9zeymSJdUSCisbwZsWWK96UBfUevAAA=",
+  "밤의 끝자락": "data:image/webp;base64,UklGRlIDAABXRUJQVlA4IEYDAABQDwCdASooACgAPlEijUSjoiETlkg4BQS2AF+1oTwn47i7eAX7Lp9vL1R7Z3zG9CXeJ/Qg6WisidDw4L7S38dq3eqiD2fvQFL10Vq82H9G/F79iPdmUdtbWxOxVweB9PxeJG9+JM8+zNuwqNRBnSBlMMPwihl8sS6ev8hMlqJLgz/voAD+/2jkCAoTAuBa7/s+18L5RsQIkDXc3O3k9KEqKNzujknRFO6gzLgpsP50kOIzcaXev8IGeOjmXx9To+Eptvjyb8He/Gql/xvAv1yutKZbZUcO+n02zE3VDObUvma/WKff5lGlbNoSdzsJYnC0Z1dm37s/ZWUPyxJXegw0i8Sqf2QvrKtobuDgk1tl3aOQKvIxG3I7zgIUJGdbh5H2S6VaHNw+njyCIus1IVOYHxxxo0HuzvD6fJvxBVRUx2EHmh+WirQX4Er9hD7JwHZQfpi4/VZtGqXbJP1xYXtwlfc9XA+zBDTh9gEKi72Q8deU2bG1kGxlcOjN6c+8SfvfuyjSwciV+sbAi3yq4F65AKQuIHD9EtmYxr1i/pOmmarOJXMKHL/bNbHthQY7IMagsEEd+jAXBU3G4ehSOBXrad/j62eaRoPveuj7yO+Jedosju42sf98zX92ediGzARVaS62CnmFLtjmZW6gr8mAi/ekPx/xKFBKplzp4cDEUW+kVGlwGpzUWM0DXUov+0/DsGXonBTz7A7OSPmGsV2xfO12OhSK3/O+xqdQOZff+IIC/u/MqyrqcXHy4JfcZA+aL8khBsgeC1e/089bKfDyfmHgajdgYo+fT7sUIuV5GkSpk+2VlB2vzKR5DaLay7pXTwQuML8/vPZ4Kvo73u8YwnsCdNrnklxvQBGgmQ0s8VEjM+WRa3R+Z8PG+R4r2/iTK6FHgmTSYEoH6JsUg5a9a9XRTIfLzHDx0BtEek02aZogX9Xk0KzzPfYsH/6TGJF9IKZ1yCQyvahEwlBEHOGEy573dHjJPKFon9dsj9tRvknBOEuto43NLfGQhvFNOpdMHg7X0zsHfJBjzjlxiayckN2rLv7hrYrMGEfSsvWmt2Lm8Acq+kPIIaexkETmhahrTzsgp+yypzl1ZxGX7pRZxmWi0AAA",
+  "피바라기": "data:image/webp;base64,UklGRoYDAABXRUJQVlA4IHoDAADwEACdASooACgAPlEkjEUjoiEVWq4AOAUEtgBOmUI+A9E8yKl/2LWESO9fc47bK/tV6jPOA9BfoAfrN1yPoUdKf+2f7Se1ddweJ3lV8yKAXWlaqGf+V36V9GA0ngGPEScoJzgybpx4Whf9xCBibU4pEkSYuuelOuakuHdKpd7xSFUS3TobGABVbNYPRu5V68AA/v9yNbc7b27HmT54n3A3rH+Hjt0Qg/5OrQ5JNoyMKozONy0zdEiNQ4/fPEfPtrH3co3/9TRyVsJHgb+FDfNO6J+xQ9TLrOqE/+hpeYH6EIBq17+QvC7/NzhvdE/AW//r2jfBR+zDkJSK9//98xAJ8RcLxZf9+vN/CUaY744+4vsobBGav6LnX5X+XSSizbB2CXdR9RXllJpmTX7QpH9rQO4U0+DzVQBxG2fu9K/mRc0b0gUf+TQVGQj9oEVkPo09xXzVy+Pq6YquESBK9EjJVpR31FwQfqlYcmHKFEwxN/9Of8HnVD+V/xYerlmk9UBGdkkNMmVawGBi9wdvVPJiNUn3LyZvZLw4q4IvVR55zcvUp2v3kkITkfmuyPbQy/eKPCpSQd9Q8ftLv9b2e7q0oAs/wTtYmALE8xWgdAXFboevOKBaXdLVGaX+MQatWGt5F9g+zXrRwblbNmPkpDR0K3Xu19jOPIk25bF3DtrHhX/7RkYxQIHy+qDxOtGBxPgsMgFG8U7Lyy8eXU5hLCc/k0Z84aXxy/yfsV4q1n+9+B9zAYgU4AbfOeMsdPuW7L0HvACmbBfAeQhlt9lnbkQR6l/OWsI0pReXUMS8Dgm5VrgOBeo5dccaTW4CR6kjW/5gb/RA7V/lR3iDpB9P13ehZlj6TIzODsLhj/mFp/MeT7s4WTgv52NLBBtZ1tCUO8zZJyibzeiEne6qiWrtYKd2VnMkHurod5FZPmHh25VvLbcwG/QhuL4q/7iWqFWWI5Ir+wgjwGk6p/crDVpxOufZmQwSGEpKt7J0yd+hzHCU/fD7dveLAGBrnIiDmXx1GT0WsvFLeN9g9MpFQ/oQOD+y7WYs2+4g4zu5JVPC+jeyy4GLD+au/PHHgai7Fs+10+jZnr9YD5EjsHjYsbFJeZzIb8xmRsW1nV8upMpnu87jEfBO9NVg270xh1bsVps5ZB2awf+mgvBsu+PhXrXD6lja5CUFj/WvPwAAAA==",
+  "헥스테크 총검": "data:image/webp;base64,UklGRh4EAABXRUJQVlA4IBIEAAAwFACdASooACgAPk0ai0QioaEY7M78KATEtgBOmV6/G9r4qza3wlw0Zfa9PqO20HmA83rpAP8B/ZutQ9ADy3/ZB/dP0cLlv4L+KPwV7R6AnzwfOeO24d/umPJ/3ejVcieXo0F/Q3sAfyz+r/7lMHWnALYn+n5yft9ihb2xTWda/uxLM2MMeLyiXtZzcpCpzHrAR/j032lMCSzZ6ypE0yzFRqzTAViT8l8tYAD+/bIW09x3EYehkKJmsoAWo2PLoaspmGj+FzFqXVGsE6ba3Mu7B+Fr/tHq3qcJGfnKEy71vnQQX96WhtUMWG3Z+NXLuCNEYN1mr+/vznXhIIJK7wiDghR/+1p7Ndf4frAIf9uu5X8bqswLYHde8H8XsE7ZJWDgrEBk5hMLG/QjuKzICsNLIfTPqzajCM7yiS2+/ojdl0IcvljCKd2SZx1/w7fhh8U/non+viXdT4vlLEzdhL78KvKCtesmf5fm+H7o2R7wnIc3CQwyWaMRzOHzSy8SAg+IJ7UKhn/XLVCTTxMHLodm59fz9ZOC5zaHynuG87uJNpT/NTWI5au+KLbEM0XXNSbpLJf/BgS7SK4/kzK3hN3mIh2W/pQWwbDP9j5TP4XzmPxIMsbORZJ01zUY+5X+m6MwgmnsDVWZgsTmmQSRYf4V8TnaA38Y4CT478QFz2R5O77/kr3fQBtcw6tFHFm+9g8jfApPHRuISGeF7A22QU/aMUNPi5QxHSlZM+ov6T/x5p/p3eVwdbMxkSCs2nccMfSB4Ap8u8SMbXgf/WurdhSU3a3qD8IsDfqj5G5MT4CHxndSJBZJm2pjAxYEyn4na1ZFWV3fDe2Uw6nPH+ehXTTnsqW/5Ch9EV3ycBo4uI1altscBphX5uH9tbBnsGbvaaDt/HBlTPTuI9BAHoyXf98FooNTtTjs6eEAJoQn0IXFAInsLwubp/H4blWj2I/Zf45xMT+kFdFSSJ/kMTobfMWS0Qz++jaRhfey/P0AtOa3NS1yV8pILM2QPoNGzzMRFvxj+SZJaRBu4SxNLVOVTFiGQPuTQMrgSeaehNcjHOWoPd1Ah6/yFOaO90IOZq9Y/q5gyJtxVI5Gt76kye8BL1SAmwHeTrLLsj14yzaha6M80V4Wr0rm9/7r6xeyB1xQBgAH2heLj37V+RbUe9+CWdBCv4vKO9e8e/i5kCC/lRT7wt/+e1tux5G35g8ynYmx6izcmz3D3bFT/puHYPb7zw8kHYAiHLiiVctkOkOHBppDK53WMoIRk7+M1xGD7RCuEobh9C5jZWmxfx7+fSThtF4wV+FoxlVwnIDhBMVjXkeDiXwFkSAVHxLmHJo/YL8yPGZb4tpzggy7HXg5TZbL6ipyd8LWz8Nw4mmYTkanpKo0UAAA",
+  "쇼진의 창": "data:image/webp;base64,UklGRmADAABXRUJQVlA4IFQDAADwEACdASooACgAPk0ai0QioaEY7M78KATEtgBOmUI+A9m/HL2BKV/UMYL5+8d3iA9D3pMeYn9kuon5s3UAegB5bXse/uB6SNMp/F5BzRNTN/Jn9VewT+soj055zNHsGexFoWWXVbjknXZY+Zbtv7Tod+gjMf1kGV/M972+nqQSHoaEVHFixmL6RMFBrgz9MwAA/mwfYQrW+sWJHfUnVnUsJBd0xbdcgufr2ip7bPE0TyPzxVM+JKZy+1ODf23Ni8uEuaY65d+JW5MZRCy200buqCWqEHi7df02e+d3C59890pljR745+kI/B9EL2w9kFGBOoJxX7MSnQa0/tBKG5/6E7i//2c1VH94/6XIr1Z4S73PONW0u4GwQrCMC8adh8P/p5Y7rN4TnyrtQnFhkX+P96oEIk+NP/3N6WPXkydnniZVJ57std+JkReUaKkwe01fNduCSJNj9THlOGKZ+cttN/J0IcFiFzW7/kz4K3B46yu7SrEkZovZ/PQH8AdUUFRcQBDfJ6M3IcJa1mhlhusP61dKNItuVqhMJNPd+h83ToP0jK/zQW4Ra9mYSWnjPSX6rP27dY9DsoI3m7+xBCxwX/oGZ1chDseQu30o5hoQoLZI/9/i9M4Ik8gR2ojvzmmpx2fHl7lVDGjUz6SwJhxekQeYyPaC7/yPWjNF+nqY6R7w+emy7KrqdCpgEtg9q76sOF+05pQuRXtfABtMalGm5oG+Bog2EDqzB4BscBG6rrI8CDlJB1OzvXIVOk+6nRP+P7FeKCstSAbOPp8RhCMnc12o+Mt/VkTlfzuHF368CzlSjVuxI+Gzv+n63p9c0Ev/BfpgHPdn0ceBKHLv7XW/nGj2+6BSrhkEFfuT86bh2/H/MH6CeqfHJK87kev/3SZruwA1VOQb3levDahlp3Z7a3Lo9ATP3lwcBd1SvaPvYMNYQA663ZS+gQCpcVS1qNOBHlqQEVPd0d7DOEBjv4dOjL+FLvpi0PRteL2VQOo5MBRXxzwKi05jRCOCZA+nLEqtOm6KnmD7tKm7po4UIb2wFa23wOi3X85YUWup5oQdZ3cnX1mwsbRZJ6fzjIsfrBsMQg/w41CYPL5imkJ0tEUvrjeaPC70ExjgUGXrKlFwkpvQAAA=",
+  "스테락의 도전": "data:image/webp;base64,UklGRqIDAABXRUJQVlA4IJYDAAAwEQCdASooACgAPlEgi0QjoiEXHAZkOAUEtgBOmUI5h9E/G72IqY/R9YRK5Cp2224O813+k9bB6C3SlfuNQsuZ30EoBdg+D100/S0ukz7yGfUHsDkVuz3RwaaGkYT+Tbb5UKmgRF4+bFPmwneXFiqnBs7fkHQx1sYJLkRocEo6eHkePcr1cP1llCakhsH2EgesAAD+/uZEbk3cyowMpQH27aV5g/jfAHUtqFUz9R7P80iGbDf9x2vJxAwIVC+uz3p/pqNm9JunjGXLdx+YSzV8aWGhP/Of8usoV/4myQDNE+s1OuGb2XOVjFOLlmz03HuwY8mT/6WB4mVtfc9DB+XoQUfJriaNct9Nq+bQe/URiOUtOseljqLEPrMTnaspWkCTG3iHmTqFQ3mCDYGy6ChF3hBsSI8O8+OAiNdP/cYbAhiYNPB4aIgZp1cR/eHi+SptfQLcK6p8LlVAASTAP4y+cRT7nTk+6PDhjdDADOKVLgjnuYPXzNBMH52pEqTpceFobpsO3IOP1NveEnAgjvZJt1eWmQ6929KpOPEBVEJvkRiGP7WZGS9sf6XWxjnM+gFZ+yFJQYRMhSboWzMs0RDRrn1T+CO+pW9/+y7iSOQnyPfcixUordLOPMm1XbmDITdm60qnWjz0j5Pmdhu41CgbbW3oUqj7xOCDCV2SWJ4ktjSd/Y2kMtzbBcRwhcTNmOZ5fjv3hdIWX2WhAi9uQtT3/8HeBbbvZmogKS6mQFH46mCyriubtAq2jYN6zCYsoaVMYF4vegjEPAJ0i9CrXU+GBx5b0OpuNqOdjucoBM5qbfKD3hnKvoSjrU3scKntsrhfEwrR9nNpMMNxZ4PlVCjLo2zywpq1PQkz7id8IStIiduzMADO52wgCu70qJMiVB8JpeFAPeogB/ZzaV1dYg4ttpIvxkUOBxU/gTvVwHPGAg7cDM0rhfaQK90eEwwAl4yHb/o4ICx+0spuw07CwakPsFaY+cGuP3rJeUeA92pFGrqJ75Q6lRv5ha5Ll5ICZJPJT3IbfTI9/T/ilf8sXtdyP1b+Is/Kfnjd+v0r9ueLzmXp4afXWCz/g3DyYBiJEJ76C04EB3m3xtsrK2HVnTgHzrbF9kjt2QzX0aJu834Tap5RgEaURIDXol0Kp6lpnDqnzjozqh5PJg2d404BTJ6mQRi/1ERKrEVRlgZPbwR0DUR0NUcTzSzkni5KF3Upl9hQ5XAAAAA=",
+  "무한의 대검": "data:image/webp;base64,UklGRoQDAABXRUJQVlA4IHgDAADQDwCdASooACgAPlEgjESjoiEXGgZkOAUEtQBOmUI/GkCVnrdxYoXW28z4DrQN5R/b6rAPN3wZ+qY+ZHH+f4Z9rTetuN8IHcW5BPoV+kfRsHLhuA02o73c1cO/Vb8zKOBLQ6sUev3xu0gauT8x3QReSxeL8gNVCJesI3VuFGZmjDXYP+uln+AA/cdNNT/5U5BSquEOYOX9XsnBtzpPOcXx/f+ELrlK6LLyGRsUnReJUDOcBexCdbK4PWzC8zcb6A5jxSrnuyb91t3ywIT3VKY2v6e+bkd0QXcqbYQJeU82zhWugZ1NAoYx2z+BqBDtSIlQjA1Unv50PBzcBYo6h36XMUTWWRt4HyMGNfFDjNEOMXRDSZL5X27EJi0YBSdNAdkuGRXjKdK7vxYZhQJQgCKWL9Ig13Yn9/phkpAZ/WFdg+Eq4Yyl/Z/0PWzDqpymF5zHX5NI1sujwyrZsX4LwS8HC8kfQfV6/I/UjL1NSUlvXYXrqQjyNMNs2xs3xOvTRB/yFmjbtyuW7Q/1+1P49fonU/4EoM0w3ymp/qVB+hzAnKaLgwGIrRf/DGpo4mBk0xxivxM69EI3pHR4hmcfmZ49x0Zf0g9QzDqMDPF6otPe+ezhZk5GWgT5yey0MLGEKuSYz9IMw7df+pN4jj0hkHPb/1XXGJfHDOMxdAccwhSYYC0VK8femPlOUmPyG1q48kFlL33g1Mm5wuCHxNk4OBHF3d1mt6IvZKGcqZE5aGr8xMG78V0/eHU9Kugc2A1Uihq+O2Vgr9MDk0Qpbkqyivhi6DbyKaIbafzBDnXp7VbcYUEEH5RDbWq/dhmOvBe1vd1tW7SpaiSAYItK4VU8jkVww72Iz76qCkWbhV+77G9y6Nm+8fPf8aDzcwFQuv/FFM1esjXylbK9FqurA0w3k45lM6YfQj7DXyiWQUJ84xFA3bmlnJ0CE9xeFffl5CvW4r1uC8cNaeniqu+EfBo0Id/IJQlX2BZOOAJRHYsDw3xnbWZ3BKZ/9qbF/1Lh+UTZiz+LEOSZl/SD7NiYPIQQlPIE4/a1fQxph7Sc8wwr4lV/VKfVe1dMk4koCgPmHLd4oRtew0x3j/oBRkfjt//XS8odqOHahNPHNW92u9K62T/rpwXYI7dilOAnew9616M+5lwhn9vi//47Jl/EMW3b6gNmBtpIeMQAAAA=",
+  "붉은 덩굴정령": "data:image/webp;base64,UklGRoYCAABXRUJQVlA4IHoCAACwDgCdASooACgAPlEgjUWjoaETnAZIOAUEtgBOmUI619e8yKrP0L8CbQiUTs9/T+eP1ieJLuCN0A/pPUbbzR+1/ogRVCuWZjnivrE4Ei4Z2gFq8RAdkUgERtbQCHKFxzG8TrDLnW9HAXoqlEr/3RKZEqe0l8PGsMRm9FQjUYAA/v8rnjlpWCCSHHequ3yp5kZk4xnwjza/jAkP5d0u8J7oUfcTxG2qO4QQ08mh8kRe91v/f/Sfn9NLdTjq7wWsMOhaWLfeLGh302y5ODAwttbfo6xhZgXe5bhUXH6qRZq/2ME5e7AaXYj8+svbonzkiXrHpS0rD8Y1sLfkQ+GotHII+hAb0X0phhsL3djZHJUAPEf5WWYe4WMihqoi3rzX4MlmY6cRBu8NUisuWiQ0/9K6zQu1ZbEV/NO43bizfsk9O6s1KMY+Fcnf0GXyOS1bb/1oFW7Do5GR54AI+Uyb6ciKy348W2nHY/r6HpH/+jeb+P3a7ddqIXrjV9dHtXfN17Tb7B4zlfugH4JQ740gnuj7NT/4PRpMi8T5w2+Zpo0wPCqrKlxzhjmVQjzpnCstl/AyAd/F676fVFzoKitmB42xw/Pfbo92mfYl0u50LWn/ses7BOnhobgji9ZKY28ja6YwMg1fwDJzz14SnBnTPg54QShxPrqTqJMTCX7uGBkrylBKWF4Wu/P1VJz2FCmRT/8DIAv6dpzkt9LFmETUoKn/fikoFIXP+Aw2WvOeU+gBoDC9dVeddHK36JWJBjhHQDR2p0caC0vENLmBX+GHcAhFHcCvztn8QRU9wwgg0frBr0pawx4bpkYly0sIgMa/WityS1RI6whvAAAA",
+  "티탄의 결의": "data:image/webp;base64,UklGRowDAABXRUJQVlA4IIADAAAwEQCdASooACgAPlEcjEQjoaEXHf2YOAUEtQBOnKCpnwnzA72CHXv6AD0X7cPcM7xf6AHSpV0T958F/EB4u9nfRifDusfypBH15jxmZiH5i9Gf1V7BX6zFFn63RAlEiLv+or53znWEPLlWmRzXxOIWquwhQhyHDxfuUzGqOSvUH4W4ITkCzXLbKesGAFQZ2RBrAAD+/nPa6cfsyEgm91YVadPFstte+c/8jT1bnbRFWtkYtIeSk8uvQ5/tltFob5iPNPT1t34a4kAWzoMvngFJAQs/ehXXM8cna9nZT3jvPe2n67ka+tNkv1Pi2KhTAjE8qySGZ8Uf3a6ZUuRbSXlwSb1eJ46UCrqSWLniRFOpNJQOtf5wwdBU3A2D2rzRqOMj4FLFOpML0nKqq9QXG82RZRb81+TeqWjvXbPmrpovaUCdpt+VbzT70hE+wZ42RRPuTE9+02kA59tbj7XzGu+jfBf99G1ayDdbpRWbDlRaNkO6OIyOGvw+LCK16hGVg6uV+1bJak/0sZfH42A1GPM6v+s1w6YcVU784/uS5j7tupRDpuL3vvkAeQ5VlE5zd/d594+5WQk7PIzTBOr1EK4BIPskBUeqQxKwQpywmANoJ3hlL96+WVx8ichBDDx/nJsRTNwXTSn9r9dc2xqNlNRC77Ie/IO1zzN3iimwFOi6gbek7BCPS6FxEjMxL/Byp3yY5/bC0gG8uGO/YtBQaf4q6ujYTWMrD6L2aPP8MZrwePNIsiUSW8alyGHFMwcE1ajHq7W8PwHqFfIYeCavVQwGhUnfPtXz5QMAgtTFOn3mn4+oHUA6qUihDU5XmTgq/Tw6D01MUoonTf36oaHLfrqubUpAo9n7DE37VHRVIylxExPfSeTxeKIAiT0/VAUb8wLEU67E/JBaQsC7sYEtFMeD+tX8kpJV2/9V9thEqQWvHR8lbjzQCLAZz/nZO9pRQ6ybjz2m1A2bT8OJCq546ilr8atA9Ha+td5H4UW2Gq2JqPw3AzF9fq7y3v/6uFRTfLXpg0Pb3Uy0g/7p/c6R9N/wYaB4TaC7LwdeuZMiNUwsof6Zaw2Ym7puMvnQ0fQIU3fXAbLSUve7D3Kx0veRKFohGgxsW5niB81bjQySls1qcsC/ZrwERGCZ9NqSKU4pUBPyzP/ObdbHv/W/iX7xKv04L7/lhsxbUfNYaM/98gkAAA==",
+  "루난의 허리케인": "data:image/webp;base64,UklGRhAEAABXRUJQVlA4IAQEAAAQEwCdASooACgAPlEei0QjoaEXHf5kOAUEtgBOmUI5o9V8wSs/3nZjiy1+PUdtmvMZ5Kv7M+5rzgP6B1mfoNdKf+4/pRXeXij5YfHXstlPfxnDTtUf4Pf36u98S2NzMvJJqH/qmI9B4m9SyPQ3B1XeCfV/VBh8xuP00+icfl5394mc9aVqqWXiblDKPx7o3hrxlIs/m7wiIaDukgbv+gcauAD+6kvSfVHhNMbTGI2afa+yM741YKjnNuifkDb/xcfM+L/J984LgjZ3H2L1dGdqs9q4lysQL+6k6KO2Lu/t4dsk7tRQMH8B3k2FOx3JCJ1Op5hL8qXDQp/uATcyr8fsv7reWTGFyqNqR3vINeWtqdj1u4vCW72jy5HbbF4/FipJlpP/cotdHXPrGlUNkEK7/kPEyY8EtSLtouXQGeTrZucvtKjnu9HuvjndUjyvE2MQeuZzPPN2gKLj9IqbLi/lwJt14RYtVLbl0qb0UcnEla2XgASUxfpVn8ILVLEgUDTEo54oRdCp4WRv3RHImR86aAP61gtZ5osK2ZdJq1iKwu/mvM725HEb+a6/l8LUgZ1anZzZ/O0rNTKj6FUiezT/VnSIn6qfXVAPhRNLmQDA2xfsUj+D8reCHuer4gk0FjwRL5peEXG8zvoahFp7wMcFj/2Rn2B1JnqCP/pU+mkZ8VH6z7QLUpg4hDthr/DScRW7ezDHh/3eHHo3Xyd+uxm/XSovqadbMUFQOnvv8G7kFyXe4WBA5fw9ZGBfCIYxQ8Ei2Y9FZ78jEigP/x4tdco73gKEZ27wHD9zUjjaAfIE7d/WF1qdJcAAQ/lqYRtlnYq38+V7i3jUEnVcwyuhzBqQQ0LTDr6gp8egGZXvw3lYTGDWjt/F62SpjejjadFxgKN4KXovdiTguHkyIQN1dp6xo+S9z+LmqmRh6l5nPW/xIuC/sgxgUaPbaMgQxb9nsJzp0czaHSYaUH8GghzuIhFoyj7+7bLoRNiDdW79DFnV3NetN5oaC1jsTiU2WHSKfkMAhSb4UUuOic/HhX7pn93wH/sa46OC27aK9ZrX1zCC2AOfRDqirM3HhKrdubuu2BsN+b1M//KDgrlk6Ol61vTY2ZVeJZIbWZbMpZ3ZnDTIe5Mv9J/21y45pWrR+vyDEfSMXFhaUVzyI5HOSJoViSqT2H+Yz+CcA8LUo2sB/r7j2z814H2UIyZLBqrdzXmNl9xzBmD+dOsg+rwTucdKvlV6rsxW0f5KkH3rN+8h0aDDhUGZC556VQHP4T8hZECzPId2sn2atKePfBE+KXnfjtqzsZNKF/LO5FDZzs6yOnnNU004h1RHowNhSWxL8wQnbsEsOpQy0iSG7q6FeGSyeKJbsAAAAA==",
+  "구인수의 격노검": "data:image/webp;base64,UklGRioDAABXRUJQVlA4IB4DAACwDwCdASooACgAPlEcjUQjoaEVXVaoOAUEtgBOmUI7R+A+wD3BKW/NtYRM3YA9S35a3qPPAejPeD/QA/QDrX587x9+ZD/777xA7AE2Yf53Uk+hhn6efFj3PK0D3n4yLVNfgk7QfLx739mSMGs2r0ETd9PJe1G41eC3fqBr8ShDH8iR+jyHAAD+//4joPWMs7A0BWRWVVkYd9+GIDFVraBz0W9tUCt+3Z1B//gGOn6zcfrjQtJnsLMLoURxXeDVi8KOa/lz21PPVateu+/7sbsMOSjatQq1nlE8OxkWVcXIO/1B1o5gIFfe0j1utzClgiK8NtDjJ8XFzZgzsiUyzZ6wrF/jL+Ur//VH8BDCuIvf9/dfN/zFjqu4cRc5gF+tY1tS4Nz6z+sl3fMlcvVyuqSGrrXF6kIoZUZ7wmxXpNS77/3Vi8DAPAETBFr4qk/0FQQmadibeoQ8e4NAgzua9E1C6aaQCMajKinFqmLn5WFbhzuOoJV+fG8pvUkHaZUTZDY3Kze31DxVZPAMgWG4FAAF9On7uHetKLlrA+EKJc59K33GVASLVaIDVgvX/tza7u9DDV3usBI1E5p6WrN9S6aW7zkNdjn+mgiYad9V4aeXtOTnCKBJch67Ii0So8PkpKHDTvdl9092d/4VaJ/6Go3aUTfyft+7Bcp8f97hwvjIuegBTlpS3x38/5svVrgAcBUxTJcf1/rXLX1H2Se36V5FHUMfm5vEKtZQ7y4Qs1tCkPIrGcXZc0CrqoFkRLM8uvDJJklqUgkzpUBGW/f0NWSf684xXbjXdodE5zuHyM8r9jSEBWjd4wot9Fz+XPFG/bKEdJSvd6BSGZlvCVPYlVvAZMqW7DJPqlDUu2pgUizNdtoFeO+HWN7kn0EuLBYbqA7KKxW0/F6bL/X9SPIpnXVN4VHeLsfNkXLfYpFm+XLQAsr+u3mM6EehPZuFEU/XIjhEqUato/7FgM7Gt1hXavkVpcplWg0CIwIVLpTLMk9+vycQwrgvbjpAokUEOcWQLxFVCp3U8h2E0EuJNxqwaB3SGHr2+CNN214FH9wAAAA=",
+  "스태틱 단검": "data:image/webp;base64,UklGRlwDAABXRUJQVlA4IFADAAAwEQCdASooACgAPlEii0QjoiEXHAWYOAUEtgBOmUI9P9k/Eb8gPkiqj9K/DHFWksr3erLbS+MB6uPSAf2v+3daB6AHlseyJ+21ho/bPBl8XW3oJ8z/ywfT3omBX0zGcFplRsSNk3FUllMcHm4konw2gZgHjmbOnYq+pF/Gjo+rGPbww/LT40UeHpMMJsw5JZV0AAD+76J3qxVp4Nr3e9Jj/GNsRV9E9trtk5UO1OP0/GRL1YTIAI1ML9wBFg+cEr0NNdd6bQJJ7+T9dJRVYjwnPNWUsllySuNGRGJdkt/vwzm/8K5YqiSd8gWacRphPtETV/+aK9ejfc7aIphCaUhJtC/H/Q+MCS3+rVOvfBjZ+hZUIV18Q7HF07phtsTm2kGK9TE7/FHY5bwO1vSWPxx5VplvcfXL5QLr+tJPtPLUSLzdpvaOpAlaxpO8Yi2klnnM+7Svy53AVnWEvEXi0azFNQIlDTxXI7bl4ojUrcXQpBaF4v9hFWxewM2nMv8GC04xgoPESy+n98xtJkLwOaL4Me1kW5rONnRXh4s5crTxE7A7hrU/n6dV6zQ2yG4nRtRnvXyWa67AoszsJnZTPTJ57gHNrHg2NClC3nsSqj/dr9/vmsag9c+hrscg1dYqWkRLU9glWpBcwfrtyEkHnRYhKZi61SrkTpkw89qvj+VY26Bngwz3vtzvfe7XJm+h7Jtc5mY/tazvbsw4/Tnh8ywJDZpc5JG62RLzwDm70lgh1YztBptyFjz9Kj8CRCWB35+qizToyUEMowIZdedqqsHl9YGEgE05dlgMRghwTKVtOPQrkLoXDtHWnOTSQA4/fFcOcOUFlu55NoRb/OhTivVHtIpr2IXN9ByoVQkEDo6Bzx9XZOVP3EzX32+joR6Vir3zQFfmzNBqNDnrI+Vjba3FXPVsIJ+96mjMnXCDtpys6fELhsg67YtrOo0eG+Thugnz9CrM926SOf/fd5QTdXDm15oXUZOOTCX9iz9yNfL5XeZd5KGpbAUfrLElxS2TaYIJX+bKheFRdjzPAzG1DBpmRc2iVDgdPJH/N6x7XcooOr78gN5Dr5yXQR0SgG33HexL2MT1NTXjHilNGl6k263t/n/oZRmpOWCo061PkQAAAA==",
+  "밤의 수확자": "data:image/webp;base64,UklGRlYDAABXRUJQVlA4IEoDAAAwDwCdASooACgAPk0gi0QioiEXHf5kKATEtgBOmUI8z8z/Gv2BKh/d9YRL1CN243mL84T0I7wXvKP+RoGXKT7KP6YpVqmC75TbQOSVVjZV505hgw0zKTkj1FvrhhfDtz6DKe4r/bv+C3BD8LZYjCS0slB9qwS7wPUIsZZvPIYvbTQAAP7vEHio3+h/80AWtYC20Ewzkuv3pQlhkVGbf8MTbfIN2UXP9ETu/unrWDA6il+08GgZtNtEHlCXkVdNW+5ZgdGwwm9fC9Jk4m9wEeh9v4d/s4Hwqy075w8uX/rPf0+ko3/pp/zHv/6bZI2uuDDhf/84+bhf+Wu7LoswuukGXP4mmxNIb5ddySu3GoOn0yNmBUOOUm/rShpRoLTFOT/9YqcE8/0nxAL+T/R76HaB/36vby7SU49/CYiF3yzXotgI+k1yu38u4MB3YigdjRYrU8THHPRG2JZpcBwGrND2G3tRfjhocNNVlzTgJwWZAVyFLr1XpvQbd1Sy5u/b+mvqt9njv0ATcdv3X908pK65IP5ynAQtzU3q+Ai+E9ntpxa6+KGZPnBvCJgHJy4V3zrzb8l8mgXfyhehRPZ++F01yv2C2AjR5CwP4vQ9l8lV52oUVQCJuQqq8bL2U2TjGdtptcg7eO/iBw47PY3WMkKdeTvZS6zcAOuT0XZzSe7JkS5JdZqg0O3Kge20lNDE5ruNthoxn+p+eYHpzXtO2SuCBrzLcyKxSbfVpwpIuX3XFYuMHKJNs/NAXEDlgJ/0PgbuDMkm0YVwejQHHuQxcincvRR9csdiHgYNaHkMaoDxUz2u8lRt7ObSvKg//Kl9d65HYDPyO6M655qN7KZ/+B5Oznk2OlM7jVDBr8mjS8864yiM/bkoGu9xpxU11nQ4fhOBnuPhWtg8YwfGDesacJSOfQcjoPV15zL9e2d4mtygN8iTmcM7lvbB2rPKLxTkGFaCUPeVCRgsP+hmMuyiJoGUso5IivdZHndaEH0x3xxa/yrbuUiZd+IPOHaY/qag8cDw6mX+1vG8kOjbQOQV8kxMBWEotz8atM+A9gHEyj0D1GICdBfloBbtkG+9a1T8vNy8aACsV37fUXBYYFvcMob8fi47pYxe2AEAAA==",
+  "최후의 속삭임": "data:image/webp;base64,UklGRqYCAABXRUJQVlA4IJoCAABQDACdASooACgAPlEkkEWjoiGRxQA4BQSyAF2ZdnxccIc6T6bmL8sezuUr3fGzI+mvRdRfD72zdkOFyIaObmdLsVK1KLqqzP0pDhjbtgnEiAb6VStEyNvQUNhsweiD/YgdaRGg9fpjN9e0AAD+/7xCsHJ+xK0H3JxoW78yVusuL0RpAWjCBLqMTj+j3gDAGkXp4TJqz/BqmRDHFfY28rmlIcNFMe+gR9v6m49Y//alD6x73fmBBhGOcSajM9M4NUnWfEGulv/KWA64iV2vYMaHHD1W7ER/Ew695uVpB03HHpOTUVnfGN+66WMK70zlF8d/qmc6eyf5q4Men0vka2Gc369nmYwfYPV9vSIm7heb/8uTr9Z2FOPAq2fVcfXfdazMAZAr5Y+XbvhAmmuAD0oX6Karq6LCoCfnm+a1+I9qdpC5Uo0ZdFOwENa/XqeH+uynRa+l9Sbk9SqvEcuEqBLQWRL5eXCW2lj/nA5yVMFauBfXjIX8rs+dHZpKe93if/whLVCCUNkLDM3pXmBqy+Xdw9WUFY2e0Ld0EhEx2rXH5wiTVecOP+z6JfAeznvgX1KqXMsSYGOOP17XCqrqizif35+1gKqj6Maoumd2KmQJe4e/4ZE6lCzHg6WP3hcb9dn/Ji8ZAc2b2keflKK4IFj/f/OUV9KnzngiamM8vsatME0ux5ucNMLOIObGLcbOXMI30bpVoYoE2H8wZL8eUpS5hEjsRZCKI6YotWr1waBXbhCnFB9l7ZcWk6seLW7A4lZGwIWJlvHLgQ9+EwN6qLQUqoMiuluT6GV2Tcf2M5h7Yhdo67X087KONZx2sPOtTI3q5e/MiORURHC9DkKNOBftiMcLsSIVXgJyHyH+gT+QeWO1AjWG69jIoAA=",
+  "가시 갑옷": "data:image/webp;base64,UklGRjADAABXRUJQVlA4ICQDAAAwDwCdASooACgAPlEijUSjoiEXHfwAOAUEswBOmUJB8JU75OUXco3e3J53T0PbyBvN0+j5MfQSgF2Tvpy5eCelZxyehzop+r/YGDwkPT93Cdfk7Q1njkoWUaGz8k6c0G9NNHmLTa+T8LlyZAKFkd/fHq/pQTzNIsxMmVf2EApB9wKYAP7+URm7A9rKftvxTsK//SAH1obIyn7eLwy4gkth0ngxuSGvRVA5BvCPKqOXbt+BgvUcvhtqp88JtxFHbv9axL6hCb9tk+68UkbC6ptn056x1TA9Ni+4xFzUmzspSMvdOdlwS5Ap8273cZgP0kuFmfgHaPOr3MQyxWG1fSlP02JLffs36cmsYbFTu5UjRHBmjYnmO0fVnEtAXkGMJqq3RG9Z37R6NQTEiMwT+ZoB/9bYSj8TxTJDkBRv872pUqoWd3jZi8hFEVtvBvdVutCrByDC9nU/qrhW5G3vtsqJMZ2HaQ0m+dIcp/22quW5wjp8pwc9ONHcybe1vVmbUsbEtlusDe76+Z+Mk2mFp36ajQLuOEOkqckM5xl37uebWZyzYx37bs7dIHxFpqQsCJT8fjc4yyPg7io6N2ZHiLBDy7ns3zYwDAtma3qND9BaM+jPk9sOlnKAX/GKz7MI61DT9SD94T+p2pLh6XLM9Hw+pAwy5ZfIx0sbhqw8hpvnRRSd/C4Mmc7dJ8acz2oV5FUBaFOBX7tcjwGmyA96suPq5OKl4r7bV0xLLzj/iXW2PAJOBM4C8LF449DAEMICy5OWsbno5xGYCAZcHEsAXYIw3z1y+tO93bI6mkvrltRFjELxCkk1shZ8QWjx4aQPCWXGtWQFW65VmDrd3bRHPBRPmbu4zm4KTy3b1jMFqJFv5RjA/bSHpVr3LFJA2ud9UeQrfVBTlePOYfs87eoIeksVso5MCIJCSA1axyNiYDvK/+J9LKHmO8dwNOSLBhMFQgS3tT0LU+YW2W3E9vbse3jyAQLOv5SbZy3V/lXc5hCO4BfZk8wIbH7Qpk4Dtj9BysVWDkSn5EHxDOUnfFuaOX0ZmoVV7RRGg1T0NdPKHgE3kXNAAAA=",
+  "가고일 돌갑옷": "data:image/webp;base64,UklGRqIDAABXRUJQVlA4IJYDAADQEACdASooACgAPlEgjUUjoiEXHAQAOAUEtgBOmUI8lkCVN+9a+yX2wNoKeeX9C+84egB0qH7k/sdRo+YvyBIBIl/1PC37ksQe/LwJ0rMz7yZ/UPsEfrGFwdKLtLNQTBH2eItXgV3nmob7UPb1FNCn+lpJhFK4vlny9WMZ7+BM/LX7ey4SM4OaC8vzM0ALnAD+73j+X9DuaweTQ9/Rkb6OMVX0uDy7kdj9EhWcRp8ESf08xYqfOvBtBLDsrRUwrAogEs59qrE3Sr+RRRSjXkZH7vfk8gkzwyPkfjzkIqiUZUwg4IuOoaSSSjm0/QlJmZk1+LaEZ07KvAMNhxIApqoH9Djt70fdrsrXDNpd5ov7f6GbHrvpCN2Nq8L2ue0BwjI/jDIHTIN1w8mslTwYgsJ7MU8aebGL2AxLD3fd5D+x+YSKV3BVfjzKNrQevt64NIjbDAZz19r5a95wkU59iqcV3QpCzc6qG0kSVnfzkImz2Pr6Gf3LYC3mF0xy700MV6DxmP/Q94odyWTdx3Ej8IxViJs+jyKrL9VpnsfIdVywCT5fUgHLqNMp0NcDs3Q/i14fRpboVxPtlgVivaywikRmK0yvOJlmjzLT5MjjlOhnHTt86zYkq6YD+0JUz1XdLJO7scLtg1EdOdU7fv3yBwVa6kYm3lArgGh+0cH2M9Mgb90W4n/BWGBtam+AWyWZhBk6ulspGK3IcjsF2ozk+b687Gxf952Rqype8HsbP5gIFjKKUJTwXxdHsovv0Cv8eg2BhngS/h/p7Ox7jCHiBdu9SlufSFpcjRTV0moTnpEv46It3aXg4/0e+Rg2bli4w+nZcVsQtv5WfK2ErTPScYxwg/D8f5YASaNVFFsdqIZ9s9E0oflTStc1sGfizwpIV85WetolhL82ku2QnZDZJ60sMoX8sL1XyUQ4p4ZJ5tm/A88TyTPjcUPJyVgJQNI3D4TyDVMuGcHaP4c1P+o2r/6v6OGV1/g8/J0u97+qHG4qte01pct5DNfvmc6N1NKLn+iOMvwaoEpPT/Yr8KM0N6AExxCVVQ+aPdQpLeiwzx5r8IET8KCzL+gUhmX+BL7kpSNqZ/Ydp2I+J9yEL+qvH/tOvsEx24zzvqIForvCXYMn6ksny+o+PoqGEzn/BTFltK5OAcKFAJaOV82IEFNQc4XPrNJzslV6GMhXvoBkJsUpD7z6sCzrdpIXuX/c2jHMJ6JUSgPPAAA=",
+  "크라운가드": "data:image/webp;base64,UklGRjgDAABXRUJQVlA4ICwDAABwDgCdASooACgAPk0ejEQioaEXHf5kKATEtgBWGWEeAGz5mm9fUbt7PMj+xfU53jzn2fZQ8oisWbRx9gmFbn0RIzuTFd+7tuhD7lnX91T2ndAVmSVR0NvX+uVEQAWCucTUKq8V0IljE6aq05txQ8/MeC+vesAsHVcm37xwAP7/f9MELIBvnNPvToDunLsm8Wm4gU2tQx+pXip0aWbUE+PYeRD9kYbmyIjf+3tN0+dujBXtqaqLX2e3lv5HjBj9RTUoMW1etI3YuRqaCG/udtkv2VRzTX4q026Pa+/3os7++AxlNLrT6DAJKjXhrovEOngX3H77lHIrZqsV/aLrVN+S4ne8Kc6nfWD8F4EWIfoHr7bp4+Lkcy2lq4aFbwfNUNP5f+O8HTkfhWAah3j3fDRI+AnlGSaez59nNbmNrScNSyus55oKRlNbqdolTmh/CXv4lO+Pf+Tun+NX3lDr72+RkBJJtUhMXsmr7+OVHoSKtaUQrPkk97DmRiGoTJ+fzB4RV2qIQK9p5y4eBjOg5HBotr03xK7Z0yV+N6uSyqesup3SP/eOOTK2Zugm22xwLQi5nU2q7I8W01CtuNKfs1cUVnUdTLo4TBDWP6W+3rDEsgOcYcc04WG9eLvo0ss/SqqdNxLP+zLopesOttyd+1ONBo8l8YQH7wn7A23mP8djqnxEKM2Q1qdyNvnVi2UGLiNBY8ZoB+h+MFVIPs6OVnYFLwXqS8GZEuzDPJRg+CwY23m9gujFOimFdEC2Si9tG72vNW4h/or9JGlLzgjpivPlC/3+lhGWerg3r4rSBtiDfjqDkYV+4VhiKFCXLWO7LKbGfE6cNZvTqGW3D5O5yhPUbfoBEa4oP8SQIDTRjIrQTW3SclysDFuPrFA8hc6moldhGujdzzY0JlU15blaJXih/YWr9fYi0OTzwKLtPKJa0meWRZz831uudWIxhGCoO0wkNn5Z7/0CY18jXA4Dd1wpD+RZVCQSDrbfxAiuAKPhgW5rYoDvWpgGD0sy3+Nfpq3XP9/Ye3yMZEPd/SFRV2aGXDMqh8f2G9uQxpdd870rjpnUgl7vga7LftzYAA==",
+  "수호자의 맹세": "data:image/webp;base64,UklGRtQDAABXRUJQVlA4IMgDAAAwEwCdASooACgAPk0eikQioaEXHf8wKATEtgBOmVxb79e8yKmv138I7mgTiwN6gNtn5jf2K9Xz0G7yr6AH6wemj7KH7l+lHWJuRn06oBduf6Xh998f7xn9g5U6n/b+Pf6W/7vuE/rYIfDjOshxC7y5/UUxx5Npfcpt4NGcFDAyDoOfhbUrE01qJ9s/gcKoa2N9Mt7BdLHJ6YrFHvCj9cQIOkAA/v5Sh24X5Go0Al5Yqd+WdTbFa0VNsbknwpqneZ/rp3aU6zPtndoUDW8gIzgbfl8VRNiIlkca3gaRqD1BXTzKaya/ZiAKie8yKYKaX59f+1tAeka0F8GM6AP93Yiy3MLmcYb45wET/DN9ZPpzNB86Y/GTrKTHE0c0m9ouUI5B3Ju5LfG0PAm8GPWlzzIj3T+G5FKrNqGNA0jgpDBHWLMkoRB18yRRq9022b4sgQrdnChswkRxr3FseaSTDYQgBExrf3a7dvZQaX9vZsd6iJuyk2C5mcUq5w2UNt2tJNsfI+COvvuPgAGlgw8YjiNc4K8pYonfaqF+IYycNvrJzC+pf1cm2ZAzX8j4BKDspBi/F92v/u7GgMWxjUNFXHzmldCL+/DxznsEtDAx+s8oHpz427eguVcZlW02Po6p/0rtfuTw9EyvfqVKMzZuXrv1zEsXBBRq0lu/h7JknSOmxKnbdnMYS2b/eJBjQGbXRb83HO9Nalsyr09Izft5VW6Dj2Ww4qXmbJEVDqi4D4JDfjsEB//CLKhFELUHPJDvmnuuTGRygaeO/WByqTKvB0lcO3P4BOzMe+X7nP0SY4M6n/jlpgUFLg18mpsmlgjTZJKYajWK+HYcFZm+YzO9OkOSBGZoSs7dvwNKpGyk9/Fc2C4MOUjI6683l1BbAeFWkmP3tE3bXv8zlb0vuz5V4D5mH41QSyUWdH3HyEogHxEJBix6nQmTOsmEDgRbJSoirdWT2Rd7Lwpt38dRLDhyR+qaBmRRLk5fSvF6doglRVngoxPg5O8gW7qFn/dFHupMfJEXL7lyLXcS94enj/m5i6QeuKWVbs90HJMfD3CH7omGzvgSdHBbkHqXLol3XN2roQ4tiK3GtTelKPAiQUpH5+7szWWDCw3Pn1T6ztfr9QTP/c6xkL8bu/rQlzjYhFrW/S9Lbk8P+kKY2QdUJXy2kqM5swwiUgNuXSakG0IB9ujlELb+NYKbVtbQZD/KC6pUi6OU/KjjdLx7514Ufvlx99G3s0v4kc8ABa+GO30+HHZCsOq/zSk6NxVgHgT+Hy3GiRolWAopxYAAAA==",
+  "태양불꽃 망토": "data:image/webp;base64,UklGRmwEAABXRUJQVlA4IGAEAAAQFQCdASooACgAPk0ci0QioaEXHf8wKATEtgBOmUI7D9a/Iz2IqZ/dtYRIjXm9Re2P8xn66frN7t3+g/YD3L+gB/gOoM9CvpOP3Z9JCsI81Pm32UygP37hZ2m/8fvlXG/6j/r+Mj6q64gZO0HPTH/Q9wj9Zv+CIU3iw50R1kR5n/F39wgObu0lXwk98VxpF1E9qDSD1rw1OsGwAEcBjpSsbvdisI6tAsvm7xJzVB6TBgAA/v67ciOA8XfBPCt9HV4uVL6PaXqk34+1dQcVxdQxL1nbc839J6ZXxHNlS0mc8swSMPTjnR8dQDffAGkKrXv142TaEt06wqDDhOHZAh2PWijYM8uxaDo/SqqXlJhlB1x7ihmJNuaUpx0so2hYPzJ9UXhENxJTzX896URJ2gTyZHVbfFArvECbkCW7Bqdc3IkowJpylkz/TOcOJVyFe0vWo3Zgrbc1rxhrFt7me/BnLbl4ZgIJ/Jn8uHhzgzRSTtA6FRvQgvZvgktUcKT+OtF9gdFzd7zjEk1U+COQPtXYEpimfOO5pxnDdYHD9lzz8Jy+T1HQhpVfSuHuj2eSvbm9ufzSjvfP2cpoTLL83/ie/8u+QEogkA9JqiMcMIdM56ze6TXonKKvuHJaJiQvRxQ4JYRfb4XDFjNv1R+UbrZ28K7i9hw6z5zw/uExWrLOmziO+07Z6mkcAl8yjLO8tbF/7ab6Sa/SLVxTbdzDM/WTXjJ1FeYsAR9WKuz2u6u01Y6yPJDyLf315bGHjDQy2jdnEJNJVfsdW1QFNmIVCrj9j3kMT/8b+8r/pCIYwCBGcuOFEqbODwnM9KS/sveuzAw8uu5AJECgbISCZQL8Q7waOT8u98T2D87cEtxDF6eNp1vDOooL+jmF8PNbDsJOo1JuvnDIlGwzL5ggOBa3l2J+dLcv2rgv0y1288YTeQS6VKp29UvyPY53R8KwzbyLw4NYtC37zDErv6ZDAW6sq5qNRinX6ftShJ7bwBMTojhQR76VgB0EtnxSF1zIWW6Imwmaxc7B1w8O5nY8aEQXukfsp+lFL2sxUQLOmPFu+3WszqLrAgZ9LTQ9Z/xbO7OhgUPp7Z6GdYjqk2v5moSPX/Ca1c9smzfvCngp9DGdLkxFIsnXMZktZLGQdhc6ZkC+jLHF8UITL/y3800vA4E2pNnxK4ppKgbWxgnYE1m/Js/METhIM8N1R+3h6QAW7lDoNnPw3XMG64X71CXZupXHIV/xsX08AZzE19//p4wiWVlPVdcIw9Wfgh/P7J73+0ps7AX7msHAxS+8COHR1ZDqLW3/VfRoCQiRy7YoOMHzQasF5E/fu5t5/QunpyXP8vYgAJOVRKePewFdOrpX6QNvOo/76RkxsPaRPBu0OMfk1v1sv3dPFJm2bJ1ykEiodqahA9P+d7K7uxoup1ItAZ/yR4RL+6J28VryQxn4n50TUzk2U1QBs6WTFHx4u4itKgXxKBZ9/1/4UViHfZOw5tlAAAAA",
+  "굳건한 심장": "data:image/webp;base64,UklGRjgEAABXRUJQVlA4ICwEAAAwEwCdASooACgAPk0eikQioaEXFzAoBMS2AE6ZXrmH2bzIqY/afwju7RKczP4AaDvzAeb16Od4O9ADy1/Y+/dH0qrt9+geCPix8qyQDg/qZ+q4b5ZVj3vNNQJYwOpf23kA+h/YF/WIVs1Rl/TD9ZyvkmUY0eAcG63qMkZeHb49KbSxdTF7w+RM6qOmVQ5UZp9Wr99frnfF20O1L0iw7S2FXwAA/m0H8bjA9MTS63en8FJboJeaer/2YpNmn3U5+MMbmxBAke7p7W9GxqDU/ijV7oUB4gLjkJMcaW7NVdoIGzQ9dUZ1PauRRGX1bmbUTg2KWRhTTSL7i15oYwjOYOg36emsBBrVr0+6nDFPHEN7k3qZzRMv/xiob+K/g4TY/1O/LFpY7WN/MBUt/VqnvIE9GEXNwAmGu2PW0KyeQC+8uZEQrJ9OGtL9s9NeWT6WZIvvNiavdyaB1+kQ2egVLIDs1nS0qpgCLvo+T3JCq5KiqikzsBNBBh7Eindg0kHtyYXlXS3DE6nVrJVt9BABgS6T2CkmzEz2rRsDzpLf0ZSqDOMUpTrh+X49ifn1bb3x3bAT/gcqmf2v9JSUluamafj2bOjgW/K3VEM5FOndq1JfusuA60x/9w0syfvVrgPz1n8k/FDHW8VVcIj2hAnSInqgZb2htrSD0viirvmgH4AVe+YKbqz2Ufw0yLsr+2vGeptQN7Q6N8zQo1hkqE0ko+BTq4w9LkODZ0J7cTzqerbAovAX6DeBbcnSvrSdScL9916ZNElIoWPrfmqQDg9EKpUjUhvy5y0z08v+62pFRRl9Q7ixJaNM8/vv2U8trY8hoizilKmvIHroE+twevj4ReOXchB/wAX7kfH0enm8ysPhtME2HdbqMukgB/4aXG4YZIXGQVfTX7aw5DpT9TlMCqBJEMpoJ8Qi6QF+O8bcaWO+v79T6ii6QqzaDk3FhcEOwExr8lnkvAg/Ja88FYLjZN/jFqr7BL9R6vJ+99VfbeNlqgOdyP5ryJsRQZQKYM9l0X6VTWI6T/cnOSXjSTABYXuzljEcVot/C2jFQGeUAK4q7tnn8SMnkECft8N9DIbfjXhhZNeW2CZ4ZohLttZYWaygH0605lXJ0/zqMnf/cyEm8JJ3+jOKqqpm/fr/NoXW+hyGh2ZKGbRID1PygH+RQ9PSSxRpG+zUf3qW7ef+P+GtW9yIfuGbXxPX0PDu/j/kcu8we6Zgug2OQgFJeo/MClB3sK6xD+DCKmg56/gRPgt/70mqJSRdPNB3Ae80zdBHX0+6FJQMu8XsSKiDA110+4g4ohUKMFB8jlhuQ5RSUdBW7+TqAodpEGdEjXY5uJ4lVtg9Fm2Q/4nKy31WY/7tQ99j217uEqgzIy2uBPFF2Xr9kJwdQDamtMEWM9PusLJ01z/lAfo2QoLPtIHCgAA=",
+  "드래곤의 발톱": "data:image/webp;base64,UklGRnQDAABXRUJQVlA4IGgDAAAwEACdASooACgAPlEgjEQjoiEXGgcwOAUEtgBOmUI+V9J8wSl/4D73bjiZWEbtoPMZjqXoV9K95RlYs5bfWR9n+YzPsFZ+dOhF/1fN5qEfl2OiEys+zORFVWL3XCSwaLZl1aduAyuU4A79jcSGMvTO3mEn25qA8wsbg5mnbmd2ZPiOkNWKyFUuRAAA/v73U0FRE3dhnqTwNIlmg0yGwzc3Z3qvyG84Pe9TLyMY0UlKGq+l6K2vvrlGqhQ/GlcUEY7NykZ4KGrIyoNKbyckokKy6jJq0iWl1PZd1SC9PeR9W/0M/d+l56V0u3Jn36pM3cvE/4jCP8HZ0H7QTfpNDsRn49gV0b+h3tyor99z6ahl2wZhHcfHs8qA0V1HkBdT5lAWEvW1qMZ/REGzCOtjHmFZDKV2lGhDrJAnT1uczJ/K20Yg/Y2vCZnSDor9s68mQ2Kup1B656GT986e7oDPIEXmqi99vUDTu2AojEQNq/eAUwE4Zf49ozfylwQdjEE3ikmf0qlJsq6wmKeTVx9bhBSBDfhnQZARErlVs0ny5RD0UMaFvXq/zUP1BxS2v/zRF8+7I6JKzGZJtLdImHjSHwMTV7l22FMqqClz9XcJX/BLAFe39/1V95JNFOJoh/fAertE/FBqyp1ckYXoe1Ew5btZl8ThcLKGWcaNvLZifwTJzjGp0VgVrl25eRIB6Ll1NkOoTLTbq48/lXfIJMD/w/Zf7+z4b8J6Xu8RF2Fu2pvuwaCaAY3k/fAICObc4toFkW8IfX0oBb1kegxbaId/foWR2PT9nFc7c8GoQfohyy7/mDWeAy0J0son0zxg83W+QlsNp6H+mVYz7vfWfBW7PkBm7thi2VpEivb8bTvWcxofBU+8Re3sz7d2g1l77b5hjfRYH8vs4Ytt9v8Lf/4p9rLmSopzgKUVozcG6M2bjCVVIGj3qm8ioWffj666EoFd+9eCn1Cv00nf3sc/VJx/8Sb2AWWRd7xo+WHvdkgtf/1Me9IbwB/e583uq/n/ydy7bxauc10Bzo+nf8/Gpg+f/Nbl8/ungJcDkVB7B6WQL4Plbw0pHMjPwPw/N6TK7xLah78lr40PVD3iMC5Mhdh/2GH0+c8YWPv762XvgtgDNoMmv9I/NZh3SLwks9ieMDsfLdPdxm0TPe0AAA==",
+  "이온 충격기": "data:image/webp;base64,UklGRpQDAABXRUJQVlA4IIgDAABwEQCdASooACgAPlEei0QjoaEXFZg4BQS2AE6ZXrmH0T8gPY7of92xZ+A1ttvMp+vPrAdIB+unWI+gB5a3sf/uZ6QFza8G/Ikk3fxNHysCZ/5SPqEVu49BjIhiQeMsMzi5Pzp7fRrp4F4Htx1nkxut5Bk6piLHsYR1EMb7ieNovhyWQ8De5uUeBL9j4B2NQQ7+5QIAAM4//iw7fpaEmY5apKPQsweuEmZ9v0dsW+jPAsygkhPWYR6emKAYfYmVcw6v6ctkui6ymprstrCnuN54QdA9GoOSlykGkOumgjNbluHz+W4z+bl2GShDbGr+C8RgPX78SezR4wwt/8cQO/mhVOEkteSjyIUFDUc6qfslzAGWcf/MZYbpmjfEkmjcSgv1aXD4s+ZGlCSrNSk6Dy6kIyPaB2VAs1NnJXm4/2Fvn/amNLdoBz5Kos1Uzr/TD7xCNp760gI1J/N+yJJ6ec7uyTngVlNLz9O5irX8grnbAXbpfsn8iy+VTL0yxyHs6Ujs1OYtxXLBasD32cSwe/85sWIkdnqLcSsi1b3e+twj7wkZb0/OvaOt/IQNYAh/i6io6taopfRydA7WFef7i+k6VddC4lkDOL46VIkZbQ1RHsUj23ePOAvHm0wVFo1yGxwveebHj7OD9mBD7gDq8DQrqmopRSva/ZQf5u3i3oEfHNoYc0yq95MfXjyZ/7kUK2rta3jWBNnvUH2oyMQJq53Milm9bpoMBZtOA3waI40AMBtxo7PuLGQb0Bw02DrfNxUbrHixKEKXGd4EVOcH5DBMQVq5rMzxRPoCiQ5mbO/G4n0EedqaFpQq4bzwzPQ2mLPx0RFcAL+fVuEBsITpuHpQKZTTatAa2icjS3+q2fAKc59iU4nEHHbm1CwvdTS74EEMpaEdtB1JfoO73Mf8eJ++yWVLiB/kJLVuOHUia9MNm3xwuyiKgGXNXZeO4lgqsxtSzGtO0CheSrHEQwwwgQogtCxeY9G+MajRXPwdqjFrsKSMGcnPYduDQs9ScexDmSD3Vz//kM2819+EcOT5mGHWIVC+phmi2Uj3YXofVesGBKrd7yAh5RgKixNVjFZKyy6IUauEcdRP9LFm7NR5Xm981OxyIhYueV58r/OWsg++267+dZTt1L7YevOl/vFbfJSUq+8p3yipfklqUINc8A/hdfX8nXGEoQaEDJna39DoPtA5/7aDfAAA",
+  "적응형 투구": "data:image/webp;base64,UklGRuQDAABXRUJQVlA4INgDAABQEwCdASooACgAPlEijUUjoiETlbQ4BQS2AE6ZQjtHxD8d/YEpb9r1hEqHZXjg9R+2N/VX1LfsR+wHvAfgB2AH+I6jPnyvY7/vvnHXdJid5H/XagdWA5eu9H+U0LbKlq4mc+QP6g9gP9Win3H+zW3gLFQ9QQyd+C6C+4z3B4g5ozS1kAUz1+HG0SYpYIinhtEz0pXQ0p6jeR08vn979oZFJmJQAP7/co/YTAXd6DYQsiYDRsjNhO3nyYfiYKFKX4FIq/fMp8uoF+ae685Wh/h7iYn31v58x/82ep5VfDAyzrpJboiiNhJYSI6P/lxfPSJ1YjGXeVUFlaai/ZoqJ1B5ngIdRzInsFAvQXJo8m2KO3g8yO/Le94LaF77iY5LjJMCLO+6pR1DhqexHM+7wut41i5WjmTES1c1ZI3R6C+kQpEG5+ioPKE5p/bAAbIyv+oYMH6++3XMk/xuVFQ795FWst1uZh9P4nn/O1bckIL+wyEEj3doji8TfYleqE6H3/0CfC7LQMLsXR5ZL+Dmx4Xy4GPM4VPrOEksKcRat0cISXsaCG8HnUqmhE85AxjSnF4rFGxM/4/3Glp1lV71H7Iay1sIf+vwMLX8w1yAqzC7QDVRQvONWtxocwtpu6PG9Afl8pfOb64Ak9IdJyn/ivDawJKb0seHBaoArhtld1O59cZKrFXmoZsf8JYtdK32sE7sYKxM7dYSw5yrbd38Hf3nS+VhdO8Tir0iIdKJY+yycr2R53Pl3EwGo8p4g1e8mBq49c5pWY7qa6S0It4syx/JNX4tSXG/ouR9VZRUDGLrJ+rxpLFKpL6tBkXZebd/POe3SYkUkCxiiIqQ1S+4viObKlaAM0k/qP43X4/dgX7tSATdOaY5aNT5sdNtKru7xEIA2I//tdZ2656dlXXJlZ3/AnkWp6FXINAVJXtM1ymQGRaj2qpqcGXBmWWoyvWZIuHCgSOxw2mSNON4pfL4SPi4IWuGG0xLPbIQff91I/5Bhb9O8ZhAUxnbRLy7fl3tKMzp/ZJTSUEWC2AYly1uRvn0sn3k7t1W+layU/5yvPWzck58h89dupFc7/4tHyhXH7yFXzguELXbMgxtpGtRQHnsy9HKUrwSBpjWAyPN0tOdNEv5tlyEm0iYMOTF6HzP9nH7l+fxEFJFVb8bLKoCNjhdiz4BcPz2fvCGP+3335c1e7NXbtg3xA0yu5OXTEfp20oMVXdQV7W5Nf3tbVyDzBG5Ls/xV7P0lZcsTkG3ugrGdszFtir/yuf44Sf4GEbl//9jCXM7VGf6f8//O11o0ekjrvYfdLAAAAA=",
+  "저녁갑주": "data:image/webp;base64,UklGRkgDAABXRUJQVlA4IDwDAADwDwCdASooACgAPlEijUSjoiEVWq6oOAUEtABOmW9ZT965QDo3p8brbAc+BpoHoAfoB1tvkx1jXlb8z+zPHRZfpg25uwU0zEzDyT6hX6xC8YqorOOkCwa7LwND34mceXKs3g0b73oVwMGVWj4nk2LPPyeqNE/62yATWW/NGRQR531JfekvJ6AAAP7++z67Tjuby2qx7pdVf1P2GyFxsrT3mlXbSI9Rtm/DvZRsuCb3btdl3VNgb+izHwIHVoz1EhVUxtGU3tO0m3vGASyfYnDJmCxBc2WVKI5YoD4PhVPjv/z9fHQn+l4eF7ApFIRWsWX5izQzT++YVbBL0XLk/zwd+dAQbTBFnQ/8VRTkcPlA67/V/4Zi+dCYQTUzIXAK4ZEgQsR01GFA/cENWQhW8btMBrrbXXZTf3/vp9pEsJqpzUYYaWvgCOy4meeIBbpL8mRBfMxLuLr/829ul4Hh4eTdhm76TIUjespedU97PejaPS4hnT+217Ay4iHsFfcx8JzQEeZxACixNW2Z5chEiShGoJuyu0knlKBQ2RBSLvazoZ8W4xtv7jZafmcOw91v+n1WLMe8jFs1FB32NY884+UWk3WHpGf9UKapXuaVLy4zSatEfUGY9rZJErjkzs2GY5W0H42pe6Ya5MMe4oFsIX+HbTxQiVJrpKl2lFEZZji/0o95Kc/k2bnQjKt9vUtXEoxZNmXbZBi327wx2bOCtHVtEz4typvVc0g4jFLRWf2D22R+rOQeFEs0sbMZiY1etFizY5GLmL7vlmc/d+R925WcFIZKVytkwxsD4RQfrqwabb/52qLAQ04M0kDAIk4kLZXf8Pm6XPz/edHpI/G86piZKk+8CR3/vWON526M0f4iHG7wpI2/Gnakn5ZDHoNUCunZGqUk12Xe7V5fEF+a2G4PLCll193PJvviRVS9BBHcUahTBHqHn5a/iYvbRwimVEY4+iFowKQpvwH5aFwoKl6YU9OhDHKeO+wC7131PYJ4t83Ih1pEBElYje3NCLFuaZak0b8chwDezWebLANeKE25X+x8RJkn1ESA3pbJI4TyosF35N3SL/ndpvCE/Qtg/wTi8eDL/O5D/SoAAAA=",
+  "정적의 장막": "data:image/webp;base64,UklGRrgCAABXRUJQVlA4IKwCAADQDQCdASooACgAPlEejUSjoaEVWq9UOAUEtgBYj6OiYJe8FfjwOdtloM3Ul895+2/wmftf6Ud3c/cPB/wtLbsI6p3VgHyZOeLAt2RTbvfZtJtAX2A0uW/NLk71be2W6wwkr8HPOwbLubUbr41wo9OVCci6aG2dVAD++g9OOjp3pZ9hKUvt3pqz3CvGUUJzXGN9hiADLQUZZd3nidiv/DY34jC+tbiycp4RDuamiEDFqec1iDYww8A9l1UvJMQ0p8rTfNR/Uh8GHqcpRVmn/5VvsYny/n33Mtm/rEiU/O9GouWafXcFQbe7HRdIZwFlNFp2ngGJB7rX6KUxf+AX/MuAqg+o5eC26/ckRvq3PCWQgA5iuzLQIQlOxAiRpoP6a9640RsPjpXEeHAHBtL8HO7Lmoq+TViN0/ecP/hWsz+ttU+lzMsbuzNWimoX3DnGuyOVvPzJbYeH7eS4o9uSEs1mZSIOBTie4zMZ/u7uDt570fJeGMI5ChI/V+BWHAVevoUoZf/z033svjAN0BZBJF/tlSKyLFk80j2VNOCuyv3BReSCJCABq5gnFP1rrbJjjo7xGJgMY6gPX4aKCsvvKkjucZXtGYzHg09//g9JUf+waJWZvNNDZw4+xJ23mFJhP3aW+8jXkGglT4mnlkCVR0TLfyKPMrtnC6ko9Kj4swCDjIW8F1A1qFJwjV85g9wfXjx9ZVlJOpgEC0XZ5NC6zrOa1k7SmWZL7BTkTghCp7ZYkPnWHCfLvcxLCVwOrtV+v5W6ZL0ucfCmPT/scju8ZRbIL5X8er/l93F8eKwEeguB77KXGRVZgjUF6kz8fv1s6WdH7NUOVlZm8RLV2EQWy+nkAu1YH4dGi35KpANxIQyR8eMaK0XnuxuLlfoYVcYeX0HvtRZC1FAE1OAAAAA=",
+  "라바돈의 죽음모자": "data:image/webp;base64,UklGRk4EAABXRUJQVlA4IEIEAACQEwCdASooACgAPlEci0QjoaEXHf5kOAUEtgBOmWEZv9A8wSnf2nWESO1s/UBtsPMR+zPUp9AD+tdQ76IHlq+yD+637Aez1WGuMX0ioBdqf67hR2rf8NvY+Pd1X/W8Z+lumX+RX6c/5XuF/yn+yFM5An5HiRPfSObJN0ACFUaxUrQAp4oOEwsUtLvXP/NOexPOH1hjYNnXg4qQRUUqA5l7Re+G40AA/v88SoRtSoM7kbRQm/5Or/MPuw5CvKy3svEYT6aHvzcx69uRfL7X/lToIdaLrjo/bTZnoPdwQsrVP5niib0qsWckhxC7+YJy5xy7EhAre9/65teb3fnV+obRrm9D6+GsUNf8m3nKeNv/5cTs7ZmvwdSOI9Wn8tpszh0V0e2TnvYYtEl97x2ifP77vnAyTyZnDjO1GrJYYYkdDmSEmnpdjX4UFhPtU8wu0vNtX8Oe/Acd//qz5JJ0+Ke48In7Q/qjB3d3luHKtAm7mZRn4Jcg6/AnkpOxxg1+Tu7YzXec4P5/xO0CyrM4Lgsfyw6pmIvB1QFWKz9UrfwYqr4gF3eWDkGwtda4QtBj6OTcZ13tC7o0j6m2wstw7Q9RZ/wY01Tvfehi7h110aeW3zDP77E2sTRtPl62pSIQP8c7icIta//pDeB654Xw8ZWfoD7VoE6Pj4j8DsxFkHKKwEyxJbiO0rL+3uqM4aNbgCV2mqI48w/V0UVB/XhaQVKgf/bLxvO9fugxu6NhtUbzS7yKc+8yTrEOPx2SC2krlG9aQGgHJ98UlDE/KNIlqi6/go6wrxUIiYFCw14ULlGBuQghsENMKMxB0jWKZBk3XzIMy5dpqwXtetFUz3IMWsIlWMaZP1tghX5ua3QnMjmGYCH6wPN9d3Z/VscROvY+rfcAVeOzoteh0trUI4y86qyn21NG11zHtbh8eeHwRerVW9i1KT97UamGlevHBrGyCdG0bO/V3W2+jSkcGQg7IZ2ez+9r7NnFVbo+85IwRF7Z1mex746gMwd4wPwDH88GJ/fu8TAsl0ArGfY4Cyk2/nxABrvfre87s7k6/1nT+1sXjsgj3wu5/vxWhvF2UK7WVrGvcURfBL3+OL9VsIp2/geMCwjeLHQLjpC+lPp/tHhe32dPthf/zaGIHpYIsdbIIRcJNuKpjlUsQlwBy4ObOtQXJamjT5fXAu053wtM5fhsT88cg6oGUs8RjHNRxDrH6wM4myF/1RG7Bh4Q54SdsRw3ygyreGJhJl6oV8/97DrsmGLpt5SmLOpVK5c4o0gu/PK3m56Cwe0HH3CnrtgMsXtpfVV44yRXLbB08izdiCtt//p0f/M7iNQ4+14o24nA7CZ2PtSOUr5c3D+7xWho1Uxggr1W4CHOckbiHetPTPs0JV2odD9dIcVDfD4yeqxaBIssnJ3ZnVW4mgANN3mhBQHQCbXyK/eJB0cEpxRNgI6UrAAA",
+  "대천사의 지팡이": "data:image/webp;base64,UklGRqgDAABXRUJQVlA4IJwDAAAwEgCdASooACgAPlEejUUjoaEXGgWYOAUEtgBOmUI/i83/HT2IqM/aPwLtCJLOt37v9wHvj5BTrQcyr+lfug9AD9Vesz9AD9lPTB9kz9mf259pC5x+Efi48nqAXZH+LYsn0HtJSoKNXpW+fraFKECuaBIkgZEmmWCIkKe5SbZpal12v8jngiX2hAFhYL+v+86HiTgk50K69XgAAP7zZpm/tjbmdc/8P0aNnYKr39AsB1mw8gqYWpLS0wVEnuD+rGojsvBLndrN0SdVhHMF3FtEu5xr7BTjj3U//z1WcYn/+O0PS33l4mH8w6i/LwWec35Vv/zrsz2bYW257GOL5yFcJ8uO3HTYqHIATyvDwFJ+u2DxNnY5i8sXWD6tNalQc+rmbTNieyPlSIF1/utLxAla4iErajLG4wtvDAhG2sh0dgH3BjUPe74av3AvzqG3KHKdyhzH05ybNToMvtCm8xypEqOmfXqKmM5bQc/NdkD/weplOhOr/5jCX6AtVALxxFvRn3E+8rbFiDPT/mmRPW3fBsJAsosEvHkxLww2opnf8zN5oOSP9bybboLoFnVGzty+KJ1vWDLURe47nGkNNw0B1gnE2ZWsmbZWd5W+5fWmE7Oj6owkroE/oA55HetbY/WidBXe9norYuFJ4iKTpip+ZlPrIc7I655XzQZY/fzzP4Av/KKE1Aisf34OTbvsGuP1q3Ojj8CQQA2EFlPbnGL4qx7TqfwIsiMtDJc1Om+vW17rrecnb20mfnSfi+eVu8cM3oQbbMVEeaZopQYVcfnUbLrLL1yvdNhi/K5AVGCX6vr7mrxvNJn58n128a5m5iZBybIANxTraT/iPiW99JOjXOEClSVJf/uz/3tSXTj46VPEbcqQp3OawJ12biLRS+GHXnrcK2PGSxI/WIOX4OI9I6zKZPWwxeH/hsjGXuQIp2ytv26O85otS20DeQ8sVun4wxh/o9Ly4WLWd3UiGLf+7Sx6puk03iPmZVO3X/D2hfbjjV9B63SNgdNzIsJBjjHyNlnET5oetnBl+jVBlC7wlWE6wqUoqm+6TylxfYoW3/+7w34nx9EiVnmkeck5Rapup/spCfosmSmXVpZxJsBq0WmnT9X15ICw/wW4fbIfgGOTii8/HCU5FSCPGf89pp3dZ5TwvjlZxVyNlNrr/1DEGQhZT0S9yNwiOdPZIPNe24yneQTbaNdb8LQSu+B4dSoZXWYpwUiQ6lAAAAA=",
+  "모렐로노미콘": "data:image/webp;base64,UklGRlgDAABXRUJQVlA4IEwDAACwDwCdASooACgAPlEgjESjoiEVVgA4BQS2AE6ZQjqf2LkPXDefBodtz5gPOc9C/m5fzPrFvQr8tT2Yf3I/YCjNcs/tbKbdHfeyKMw+N5f1QY5ifqAbJFzFp5PyUi4gfsh1sXCQq/6qr6L7ON/2Z8unoJ8doWX2of2bLS1/P+jPh6n+cZjlAAD+/qhf7nI9z3KxlQln9Os3n3Epds2WxhqxbsUYOF5bebbks7l+cV4vM2h+bZiVmbpBDY+hOJgDPHeUCxzZhQDqMiZ/1xF/zvE+3FnsDd/wc/PdUTlkh6RW1/4ZuZiwR4x/1ra4/4mdhlaFZ19R0K04RjgkzHUqbsJEuczRiS4kDuosQ+eFJPcdGBwTnkdHd2ywMZrLRRVVS7dqJj19w0v5QZQGswHrMc8sW/VhdpjG+rUiQI5xO6p82doXQF58D++ea0yIHreRr12lomQltiQmhbcYo8tknFYXLlRVxvAwbkaS94GWrffFlbYbumrTttUvci5TdL53FM9drRVP3pqZ8IWP0WkVKaio4JmplYHSMtSo2nj6ZheLXj5l+h2CLTBteeWiVey59tkrUKNUmL76QNAg6MCTWV19ljZ441C+oSsr4x+JfkhOQD4FLMnWmulhim1WM272gA0cNNXjP/q/X4tU4yFwGGyyrF1FjZ7zgDNLxkO5ahzEE91+DhNz4eZeBZgbmyDWFnyM9LxW3eExxRKVBHw3yASRGVlVRf/AZE5jEs01Iys5q25Xhnf4YL0TyUo9qeKqzyi13F0svOOQAMvjKGhPtdDLW9+lw5ly6yPdciVllJd9xdKjdf3svMlpndRORCH5LwUPg/9/McuDFU5lEvh4BubUjME51kXxhcm7Kz/92q2xvg9gGXbsea3aXxTYGsXOCPI2KNrlW5t2jrCxnE3njzNoE2reIO1d+6MEY/6v7uV6fPQmfO9/XeMQK11Z+v+5SRskWaI17ZNbWXC+kuRfCf8ssRdi/8M1N/Aw2NP4P8/zLIpvAyBnsUa2TeVnaCYSrc3a7FX5uK2GC/SMWc74268dEHpViR07iJONztGLAHxRxF46MllHWXP/kklmymjTxoXQDitNBsfXiyCtE+wgjn5Vmt/8eZ7Av8kNgAAA",
+  "보석 건틀릿": "data:image/webp;base64,UklGRmoDAABXRUJQVlA4IF4DAAAQEQCdASooACgAPlEkj0UjoiETlJA4BQS2AE6ZQjvvzb8d/YiqX9r/A24cEd6+8gHqg+0n1Pek9+xXqR/YbfAP7B/ZutE9BPpUv3F/aP2iqw7yt+zT+D9PAtCxfvts6xwa5+uYY2Kj+vozX2tnnOQJUAv7+I6sh2VuE4GzMIntKXPZwaavViP4zwxj/HovZbKAAP7/sozENyEaUs9P7T/7//9oQb6nwQcYLZXVW0V9e9kYVXi+uceEticP4xdnAMY+Zf/xMOvP+Fx0H1qJZmFln1BxnhFdyr3/WA5c2k8LNvYPzECf+Uy72j8b/+SVllCrY/0reqRACAhx6cnDG778W4uPfWVOMwfm9mnMwXWJCzWJ1NDIIH3+THP4WVsROBemYM1UVK3EWrx5pNbushf54cacmNhBAPDcQZHzV3O2dSnHQrHIiSbkl/zTvu0nrrSqcJrxVgE3QmzwOXYIQaVF01r1UKTQ0IESPYCDlqFAOmRAnnCzg0PMXweHNE4/ucqdqLy3T4nS5+ti77LX6vI//1Yw9wXbkHLLcojyYm9+POYUV7+G6EaskwRcLy5pi33A/2XUMZLEzb2dT/awcNjAb1mn+QDxE+RKe68p2VHtfCrTZYfLpUVTLo4nAnt7WjKirdW4q1HrbjoERRDmEEOx/3kzliDkSR2lg+7KvCC4zHB740z6vp/xV/SlEsPkDMnMXnz06Z87KtETuBigOGd/CqTRxwU9SytUo3vGV5q2dMjhilV54gNuxHuVJM2WOE4FMj01Ccde+kPkHJJijeKmnOdIgJER6Spb4yWtzC7sSvS2hksatIbR3Deke3dOsd+XTU6aoeiy1267nC/VTIRCatJ9LSEiePf+WIV/f/MBCXZYvA2r/7Lfj5yFrt1HPJ2o2g/JSI0pcJs1FrPZd7dFkgB8dzAPZ1eZf8eZOTeR6YdsDN1kriBw037IlDNmffckcuvh5SH2pidUcP515iRpdn/P//6uXmmgwsTE0n0ZRYA9d8+pi9vEXDvwoW/an7SvnnuoTs/UkbZCAfvpeLpjbnxewTsaSkK8Br/Y5Ns08jp7FmdVwcE++hMnzNkoefyAUgqn5MiHgzMnmHATf4bKgiof6ZqvAfA//b8mNOU81OAdhDe6pRGtMpjnwAAA",
+  "푸른 파수꾼": "data:image/webp;base64,UklGRvYCAABXRUJQVlA4IOoCAADQDgCdASooACgAPkkci0QioaEXFzAoBIS2AE6ZXrtH4D8QPYirH9i+8W+hmnhS7cDzGfrp1IPNy6ineQf8B5qtYrx8zDYkJoUU5E34/JuOdqA+6Tc2g/tO7EbI1XAjBF8lenGnnQo4ZMrToc+whM21lNltzaCeOdGBUmPQ/rwAAP7961CVoBZGtHSEsR/ZeVH4TR5tz3KGxGrjCMrkrzK5C83U2o7TI2bOsWKN0q0oF6qtFxQ/t21JqzAST+MgBULiId92jkFfQP9kmzdxwX/4mG5P+hEuoGxDJP+kNB0WL7J7aQZGPTXfumlPTM7TuCOplZKoZ5Ny/KDh+PtULTw8WQgiDy8qeri9jPaZ60ntsmWJQS2oORc/iI6XGJi75hTlPSX+4yJRocmNPhjpANWAS+NsaqLImEmK4YeH1g/lJ19f/4kn9brwxzl9Av3f95ZsN9fvclcaTlNphVju+0lyl9gZAaYIFj281DMDC9sjtM+e8NKe4janVRqMP3CsY4jWLT7M6dssyJBi40OjthExVB11NuOJ3TsbZ8/5Ghy2UVBLA1Bz6vWg8KZRyDqowLS8wHR6lwiujnOtdeG1LmVGvh1/1Ojj3kVW9imNp9tk5djXSl6wrvZhLVWs2EP/RUBqBFb8chwbnQwZOrr2c/WAeHbkgBhHtqPnNPVYaag72RUA5+l/eevVUXQO68AfSaxcoqBrG1SLShaedJvK2NSV/Oc4h4r7PXtsUBVr5pllIqTjef66lQ3bTJl27SZzSAdfaNiP85fUe0hfVkskZgQgomcsFh5E30K+yWdFQUzACvq5Pk0vw6SKZP55qmvMb1g1wgD8T0c75i9IidZ/4Aw3hssIh7pHrvWXNqinpH21Lzq+vUw0u/5b3ecsnr6dmdBZ6AfkxO9iF6eweF79SYBM0AsHjIy+4GGP0zqcA/PFXwVBi7rnNqdqsTFeU2x9ENg8t+EAqd6ymY7xtdNRxuB+xG0mAJ2ABsAAAA==",
+  "구원": "data:image/webp;base64,UklGRuQDAABXRUJQVlA4INgDAACwEgCdASooACgAPk0gikQioiEXFmQoBMS2AE6ZXFvQebx02Gd6DL7cnnZP8l6sN6S9B3pcv2HsJv5h4I+OnzCoF9V/5Xyk3E3+Hx6/epan15xxb9ADxPM/71D/2/cE/WT/ji5VPDFGNDw+RAKyQpQLHz/5dLM1SlEppn79a0mvz8+nO/yM8p4Cqop7BhAgcRFoKuBDfD5GR+b65fylOAD+/HK2zf/rBfN9pIBny0o/kTyYYvAsZ46cDJ9zeLENxD+BEim0AIsQmlYrozm1X8PbL/CynYvALIL0Tm/Vov+XJo3AzPHSI+VBPnn+LOAWr3KElUHcbnmXtX/4rGtA21wX+DETRf/DlZzR5wdOuvRY/HW8sn+p+3K7bBHc+G8z+3UlyembgtWTCmBp0ia5zwNDQR1mlj5/6gFljMUFATmCMsUm+eaJJCUjjuxYIDolpvcTa89WFl9XBTkWfycO/kJPbe8GH+2ie5RMtOj6m1rnAXBy6BFq9NqddnpTmAg4A7XbfDwlyhlb1uIr6Ja0HI8UVyYU8QoZKWzc2ZW/ldmy5Hinj97wsY/Vu57iNAjYU6SeWHGnModW80Rw6ISV4/zNQG7feedoFqFZ7LuWeF/tXJEE4v3eqtAZGYni5hiZd50iNZuz9/DuH9FmTt9Q7L8yHJQCLIY2ZgyQdQUG0MxesYQMr12vcpvUqZuw0Ic2FzLu5YFdp00m4KXkQDyE/2K+6RXZTRN5Ut0W0LOuPOYXm0EE5wxRz8GebU50DqsZvK3vvtBKyTl74/u3335GqkVEGttsqfMmleZA0amrvE8Z2pL8nXtZEk2IUi4RyxQrF46i8fP/elzrCYVPmyRiRv5/T8vL9nEnlevu25lohXbF+e7zL0Qb/9kff9A1aPxJ8MK+PCOhQVP9j6eSo7mGIG9cumsG4skPcNZb5Vimwg+L1D8f927J4gBwoP8w6SlTC3vPxXDXLAjlnqQRHvYZDax8hiwpfTDusXMvMVDnkLVL0t3poAYLBWPzzDFiTU2RxMC4N5qeduJ/3xvUMT2ETCrZi3mxASYExG5sV4xdKDqcPjejpRaydaBRiBAVewgZeUYeV2/KnZ/0LLXQ4Z7PUWwfR/D9vatNbgFDWqTv98Fbd21L+D8RgfNRYS0/ecIaFYjFTf/+ijXRLoqXlZJhBHsbr1Jl6AdZB4Z1Pyxz1426qIkPYsV5NpApTt72vCb1YtCMeRfhFXhZv8o45AgpQRU00RFqTbOCqPlmO/OY//i2zeklP8Fd9/n+cxKRCfNw0PwByRbxnHVlWJ2oCFuskPcT57X/UMAAAAA=",
+  "정의의 손길": "data:image/webp;base64,UklGRogCAABXRUJQVlA4IHwCAAAwDQCdASooACgAPk0aikQioaEY7mYAKATEtABOmUI7R9A8wSl/1zZQiz+9l22bztPo+ZcJyraKfFn1C2QF/Te4/CjxRolixgcs7Xk/gOjAk9lJiTiRL48BuCEUcrXXhc9Sca+Pc0fG5MnXWarpBpG0K8AA/v6KJwtZvgIbqRD18mqkEYdTP4h3SQs4TOObCNYxAj37K2aEHyM5I+9aDbyp4FbSYvqN10/5FCZkXKnouPM+x12FG/9VEJqkfNUxHgOksiI6355d2lCfgSYaDoVE3NngndKs/1muPotBLsAQuKYgfWCSp3bI5QyRhxssNClaHw17nJ3HkWxawanG9PahYP1a7i46AfnBdeW5fpfVGlDVkhB7usxGxBflS7Jlzxiuhs0f9OSZwCzjOHQEltyCJITEaU42xR2TprhlbkBoWZoVWnQf6xq314xnDav/O4+y/aiziCHGZfo/cvv2Tb/OamXsljtYaIElrpL1Mw8P0dvHRNWTQh0iqjrv2JRNHGayEEorOgwjN5MWGpEYsk9MXXu4H/7Gdh/IYepLq7Fft5bPNPrA0643cu/SbV2+4j68uUslsXod8dJ1chLiw68MgNxsZhXl9QZNGOq6/MqLMsCZ+rGffgXcir/bFu37VEZCwVT7Hb3DNz22R9echo1alAtQypfaFDJYaLSQMLW/If+kKM+aW3bybeOvMpkZN4P9OvJ844yjDJFm/45lugXro/HSoLA9wv0H9v5YQrr2yIHvl+kdjoLXZeN4jfzLMfwu54+AP+4TtyZ6h1BLPy6BjLIhOd0TrFQbDly2K0dRgmRpuzeMrN4CphPhDLqUY7KkZObncNQX3RsAAAA=",
+  "워모그의 갑옷": "data:image/webp;base64,UklGRgQEAABXRUJQVlA4IPgDAADwEgCdASooACgAPlEii0QjoguO/mYcAoJbACdMoR2j7h+OXsCWF+o7O0VyExts/2V6WX/D9Cr1r3oAdKh+0NCp5YfHUmokH/P8PPti/bvJP/YclT+m8RWkvmdeRv6u9gv9Xw8OAPfn2g85+bvSSx2t/7bFG6yDEWv6dwmeKL/y60GLGQa2NqjRGd4dWRHAohPOwYpDOwVz5lDQd/o4ZgbAAP7tLoNe6j477kgI45PqhppqQn4YTGEJUUl+NzCEBuO+iTys+A/5bnymXyMVBqSrWfTCoe586vkbcmsYS35vJiPMGgouVbHtH4IVQ4zX11o7MTqFyYdBliXP7P/UACCtXkmU3RQP/3hG3z4zhdDCCVElDOer6bATswB5gtr5CJit0eHLA80F4G6wHieEkCwpd+m8CxgGdbjO7/WkZhdikudbS41kEKrZX0huVT7Tl125FtWQIfzNXq6UZXlLei2PSEWv6dqc0yYclUFcQvwoMhh6Nobx5afpEM+iiu8dPyajSB24suJYJM+lTrir8kaakYh013IOfRP+M/N0b7hLRIyKt5jJm+Dkmg7Ki8+nFipeSszo6DxAxWdxR3/Avr+nM9Q8RJfaUlv1Cwvpf5FbZeH9LmWwDaaPRvSnBbMmRpLSfrGVsh5X44zkRCLJxDRhtcQ7RLSJsVl7SxabfUUg41cLuJkIFS/TfQ72wQJerhc5lwUC6TUDG/ZlMxhcg6nbmT7y+scwwLLW6bDZ36Tci/NH/1cBOsKupXHm3mDwjor9izPVY/h1q55EPDuJvQ0/jnTZNsHbteDHDGvw55RhfE8eH6rA70ErL3+4kHdZWkZH66z69YYnifyjR21zB8Kd3jikX1B799xXE7Ir7wrsRBA1sEPuPJ78ZjPKfTH1geRSbS1XvPEwCT+3xgFte98aLWI6wsmieLHMBF0yhgsOJcqqrTEy2/SbIgldBwkGtS6xwmI2v544f1pYqvXKGBD5f+EnLl7CncUMI3mpMBveA1lFxFPIEBi0yMWOV+uQjj/okr5uP5J/k13/69okHb9qrZPp4HixyLEislqpHCPv5a7fFMtUPhNJ68dmXqpDqUMlgjlVkLtqcW5oezJgKfAS7t9SdD9JbAJWN/+o6tNIm13608NAy3dv7BC7Q7osGXIa4Vi5Z/s12oupQc0wwp19MWPMergvmopPVEkF/hQ/esFxwZF/zyBw4XamtOh1xBJX3a6vZGyMSDZv3SUXyXrTeEMwRC5978TLxfzrpodHJpIMowAirswb6919MJwYykf9/AZXrDf652YiqwzcXTPPX8bKo8FHJLKwQp/+GnE9jcfDJuyBq6+zz/8U8rob5iLyN+hbQEAAAA==",
+  "수호자의 힘": "data:image/webp;base64,UklGRiAEAABXRUJQVlA4IBQEAAAwFACdASooACgAPk0eikQioYuLMhQCYlsAJ0yhHtfqHmRU7+p/hjaEpJ8krljxu+qL7Vd8B5if1m/3f9095H0RegB/hv7p1pPoLftH6XX7KfBn+0f7T+y//7rrB4O+PD13JcJE2nfJfVnatSaL5IfqT2Cf1kGBVk9llR6JPCzXhcj+DKUKJ6TMjWfXMEXwdd+AlPubBP62CTrX+2ZuRKPK3UnYpw5Dje+oAAD+0muLYAHg+vePfUHS8qpNIxRHHeagYDHGV66pQt9ybZXGDjSJNeX810VcrPuO8h6D8Mk9ao42CjbaiTgjiddOq9KmLKYmrxx8k2ohsFo0l7QPwzmq167SnOSF1JbH225SKRO+f5a7de/AcI6XJ+2W3WBi9HK3O93fDl8KXck2LOePlOMoI5vRP6AfQSrArnfxAxSo2PB2wVJ/ZimTvJeSuXjyUb/TQQsgtphbsaLiTsBS3r5xsaEqS8NKHQsr4FR4z9gQG3GlJWg67zWA9snliAcfkH/Vf4q+Yig9Agt3w2YpvjVBPXZAhdEGmSNoBnHH+9KpNC2ENfxhp7q6j/f/+lho6cDvqWCopqxSmOJK/tFjeoiJwceLwNHiWNQIDVzjzg1VXp7pXr27Ankb8W5sUVIOyzK3EJ7C8Dk/Hc+2YAf/MEdyHUE0/5tCINNmPM3w+f4UR8yluGKtgJuP7CIKkLHylN5N7z8r4RXw9Aa+49gtdNJxU5rtVJNjO033FVV/2kpmcUdP7uL39o/xEnj18twOsLx4ZDeAVuXoJCJooSLF/YAMh17Isj3SN0KxAylzFoh4odRqsxdx3PJhz+zGaSmzsSg6i2KwOmBxb1aN6beknHKmqQMtsHvUZJZBg/dqermIxnK7/0/oKSQnfBM3a5YxwKzSEMmOWQcJ5WJieBKDS3cSzscUU823fN8Z8Fc7eSkp6XtwwqyeuTD083zk1il/3yFZNF0XAFzpQZwWSltyLAHaH+W4S6Ks/GtWPqNG1FINVFYjmpcmHj1Dbp3DVLnlGxuN5MJEIL4h1WFa/SRdGthiFZPSl4KeabjgA73Rxh8y6tEj3IckoRAfrlLTW/YskuVzhnCplPX1w7pmvl7xZutOygboey4ooPdIybjATwGKX6u0j/Iw/oi8zg/0rlAKLruSIkTEMG/NjPLG7Kj95RstRCs8b1IXI2okE++d78v5kbp+dzXGQDxB2osJiPC5ovtnoZoa1ZQo4fQz2eJZBw5qcSSi5tRDz2kI98+oV0/MnZ4LMHwlOBO37aG93dRWtwgHN4bK4BIbKj37/hLkk108f/2Mt+hXvBubDkfdDqjOZRp6v6PBS2EvbPLi3W1XLWbazsJsGOXBTHUGRG1KWRMz7yvq7S7791WXQP9WLfjb9e6AAAA=",
+  "도적의 장갑": "data:image/webp;base64,UklGRtICAABXRUJQVlA4IMYCAADQDgCdASooACgAPj0ciUQiIiEePfwAIAPEswBhWWEfi9d8wSzNiwLRCU2xvmA/YD1dPRh5wHUyby9WTehr9gn8pB23kq4bPpYVe4hqXd8HmNyCrc8lVVie6RKmbp4V+PSQuTZGvJ8QhcLCBWmmVJEZRonGObAoS/ekCK/E6KgAAP7/HHWaU1f3m83XuYB6IAE9E9hjRbd5l5HWJEVmyMSE6hmNJILOh0psT3uM8reTXFdgI+CES/P9Fadp1uhz5fGjqDP8x12WopILTghZ3dYM5PRk752c/DnO2G/IzKHXgHwvjU+ZEh/bTlcbWKQ5n+31WP17uqmdXt/DJKvXsmvS9IQZ1Zwsjnhkm8FE191C2P3+F1mp0AU8VuTR4aWvLyWS5P1rJNURiXvrE7qIMU7wI5dHCoUonEUAuAc3FLS1pRkYlyMl+srIAZniTdCK8AdYHeWHX0D+b3DH9cqvlL8dtByf5Rwj5Rr6QM5EdhUFqR7/Vsus1gDvz8gfHuG4s/BfU3Jx6dvxYnzkqAgvZOycD2eFMxK8NTp0ZIZdG/FXqY53Ntxi0fAoolaovSbnWRY4UwYM9swVvTQuHk+hxVKCAD3KaHNSndojxbyA2k7Jc6t+hovzZQ5fdL5cViwD07W9OYEkuVn8VjTqNqq+u3Bvol8d62thGAevQkfdJqvKYFwA3ihbOGC75BUIzn7x3Oatw/ra+5YjeZGQK+QIH2gM8QDqMY8jcbDb3t57rBS7eLe+miTXz6MyK5RrJnpKkjXtf4t/BMnYwBWMG9M9r5Yl+f+zCkvHHgXejHx1HUFX+kdutZj62ErXPlAWG/wXdUdCAc59/umqYT0YWVwIgVa5MBxc5Qo7LR4HMxUZ7s8Izidi7ss1ehwNC6rHyZTQZ7F3kTVTE0tMalC4fXhXpEX2MWv019Nxt7xE8szh9cNkZ/EW+eAAAA==",
+  "검은 가시 상징(추정)": "data:image/webp;base64,UklGRowCAABXRUJQVlA4IIACAABwDQCdASooACgAPlEgjkSjoiEVXVVUOAUEsoBg2IlyT/BvveeTHwHiV+5H4+urlsaZuZ/5b/pwsMPwdGbUhZvhOtrKGHMwEKxJHKctVa7HJE8Wue3IsF/gFt5+ERtZAElsZg3sQAgwPb0yYXFdLGeIIHrQAAD+/s1r3FPLLu94kyUxHT1tYq16w6xoEqbj7Ku4/B92v2/vPdnswCSzJQhiuNCC5oVQue7Rm9Y4/jYL8DlkHOfxDPufsY/vM7NJFGDezq/YdfLG3FM05EBX/7vh8QncFFs4Dltwsoj2i3u0RIGX/FgIF7SMwIBPY5zAptgXIlQ+TMHThuDg67WN+KP/DgdJbpECrN8GqQLr4RRvvLsOriZhi32BIi+0oLMj+9GZSb3z6qPZ2H6LxVEN4k6VkAj4wN1CJAiAqKMsL0RAvwY/LFI93F+PrZpm1odg5HnnQ/dsQ8JQM5eVATMitX+eKWQA+in2ZSFtYS94h6jwy3ZF05f7f2ScjcHgHEaPuyg/ZF3ig0rejOEe4y041BKtDbx3wYVNMlU/S6Vpr0qkyaqbV0sTBsof0YUIYLgwioVVaWjc733Yedaj839Z66ChK5w+DUPcJbyRPpyCd9zPzPgb9jJPiW5cCVDLUcO93K+tZwMef3nU/jkW5OEY7V2z7MABnb2qeqRGgUzavv5xBjT4UioFNs6NNEENN/AUFgkz7xkf2BQ7cSH+oBPIZSz65gaNtgX1Lw5urzE0csGCt3qZUkeIEfLCNkRytRKiDAMxrJxyqCGJ0q+SlJZt+hgfSXGuM4BvxfzfK8P14sIyKqDdj8z3/lzLPQhJFLEAE9nMOUrsCLSAxQNM5ruwAAAA"
+};
+// 유닛별 삼신기 (lolchess.gg 세트 18 '3신기 한눈에', 2026-08-31 스크린샷 기준)
+const BIS_DEFAULT = {"rakan": ["가고일 돌갑옷","구원","워모그의 갑옷"],"leona": ["가고일 돌갑옷","구원","워모그의 갑옷"],"reksai": ["가고일 돌갑옷","가고일 돌갑옷","워모그의 갑옷"],"varus": ["무한의 대검","최후의 속삭임","쇼진의 창"],"veigar": ["검은 가시 상징(추정)","푸른 파수꾼","보석 건틀릿"],"cinderling": ["푸른 파수꾼","무한의 대검","최후의 속삭임"],"akali": ["밤의 끝자락","정의의 손길","보석 건틀릿"],"ornn": ["가고일 돌갑옷","구원","워모그의 갑옷"],"yorick": ["가고일 돌갑옷","구원","워모그의 갑옷"],"xayah": ["죽음의 검","구인수의 격노검","붉은 덩굴정령"],"pebbles": ["푸른 파수꾼","보석 건틀릿","라바돈의 죽음모자"],"karma": ["보석 건틀릿","쇼진의 창","수호자의 힘"],"camille": ["피바라기","스테락의 도전","티탄의 결의"],"kobuko": ["가고일 돌갑옷","구원","워모그의 갑옷"],"leblanc": ["보석 건틀릿","밤의 수확자","쇼진의 창"],"scuttle": ["가고일 돌갑옷","구원","워모그의 갑옷"],"sejuani": ["가고일 돌갑옷","구원","워모그의 갑옷"],"shen": ["가고일 돌갑옷","구원","워모그의 갑옷"],"gromp": ["모렐로노미콘","쇼진의 창","스태틱 단검"],"alistar": ["가고일 돌갑옷","구원","워모그의 갑옷"],"murkwolf": ["죽음의 검","밤의 끝자락","정의의 손길"],"elise": ["가고일 돌갑옷","구원","워모그의 갑옷"],"warwick": ["쇼진의 창","스테락의 도전","티탄의 결의"],"yunara": ["죽음의 검","쇼진의 창","수호자의 힘"],"caitlyn": ["구인수의 격노검","루난의 허리케인","루난의 허리케인"],"kayle": ["구인수의 격노검","보석 건틀릿","라바돈의 죽음모자"],"teemo": ["모렐로노미콘","쇼진의 창","스태틱 단검"],"diana": ["정의의 손길","이온 충격기","보석 건틀릿"],"krug": ["가고일 돌갑옷","구원","워모그의 갑옷"],"rammus": ["가고일 돌갑옷","구원","워모그의 갑옷"],"rengar": ["밤의 끝자락","구인수의 격노검","티탄의 결의"],"masteryi": ["밤의 끝자락","구인수의 격노검","티탄의 결의"],"vi": ["가고일 돌갑옷","가고일 돌갑옷","워모그의 갑옷"],"azir": ["거인 학살자","구인수의 격노검","보석 건틀릿"],"raptor": ["구인수의 격노검","루난의 허리케인","최후의 속삭임"],"cassiopeia": ["대천사의 지팡이","푸른 파수꾼","헥스테크 총검"],"khazix": ["밤의 끝자락","정의의 손길","라바돈의 죽음모자"],"kogmaw": ["무한의 대검","붉은 덩굴정령","쇼진의 창"],"tristana": ["거인 학살자","구인수의 격노검","헥스테크 총검"],"fiddle": ["이온 충격기","구원","태양불꽃 망토"],"hecarim": ["가고일 돌갑옷","구원","워모그의 갑옷"],"sentinel": ["가고일 돌갑옷","수호자의 맹세","워모그의 갑옷"],"nidalee": ["구인수의 격노검","보석 건틀릿","수호자의 힘"],"bramble": ["밤의 끝자락","정적의 장막","스테락의 도전"],"lillia": ["가고일 돌갑옷","구원","워모그의 갑옷"],"malphite": ["가고일 돌갑옷","가고일 돌갑옷","워모그의 갑옷"],"morgana": ["모렐로노미콘","라바돈의 죽음모자","스태틱 단검"],"sett": ["가고일 돌갑옷","가고일 돌갑옷","워모그의 갑옷"],"soraka": ["적응형 투구","라바돈의 죽음모자","스태틱 단검"],"sivir": ["무한의 대검","최후의 속삭임","쇼진의 창"],"ahri": ["보석 건틀릿","쇼진의 창","수호자의 힘"],"amumu": ["가고일 돌갑옷","구원","워모그의 갑옷"],"aphelios": ["구인수의 격노검","무한의 대검","루난의 허리케인"],"ezreal": ["죽음의 검","최후의 속삭임","쇼진의 창"],"zyra": ["보석 건틀릿","쇼진의 창","수호자의 힘"],"gnar": ["피바라기","스테락의 도전","티탄의 결의"],"draven": ["죽음의 검","구인수의 격노검","루난의 허리케인"],"lux": ["보석 건틀릿","쇼진의 창","수호자의 힘"],"maokai": ["가고일 돌갑옷","구원","워모그의 갑옷"],"ivern": ["구인수의 격노검","쇼진의 창","쇼진의 창"],"alune": ["보석 건틀릿","밤의 수확자","쇼진의 창"],"ashe": ["최후의 속삭임","붉은 덩굴정령","쇼진의 창"],"elder": ["무한의 대검","최후의 속삭임","스테락의 도전"],"kennen": ["밤의 끝자락","정의의 손길","보석 건틀릿"],"taric": ["가고일 돌갑옷","구원","워모그의 갑옷"]};
+const ITEM_NAMES = Object.keys(ITEMS);
+const BIS = {}; for (const id in BIS_DEFAULT) BIS[id]=BIS_DEFAULT[id].slice();
+function itemSvg(name, size){
+  const src=ITEM_IMG[name]; if(!src) return '';
+  const s=size||20;
+  return `<img class="it" src="${src}" width="${s}" height="${s}" alt="${name}" draggable="false">`;
+}
+const itemTitle = n => ITEMS[n] ? `${n} (${ITEMS[n][0]} + ${ITEMS[n][1]})` : n;
+
+const SPECIAL = { lux:'lux', khazix:'kha', rengar:'ren', elder:'elder' };
+const SLOTS = { elder:2 };
+const ALIAS = { sentinel:'고대 파수꾼', raptor:'칼날부리' };
+const EXTRA_ALIAS = { 어미칼날부리:'raptor', 어미부리:'raptor', 칼날부리:'raptor', 고대파수꾼:'sentinel', 어스름늑대:'murkwolf', 바위게:'scuttle', 심술두꺼비:'gromp', 불타는묘목:'cinderling' };
+
+/* 특성 인덱스 */
+const TRAITS = [];
+const TIDX = {};
+function addTrait(name, bps, kind){ TIDX[name]=TRAITS.length; TRAITS.push({name,bps,kind}); }
+for (const [n,b] of Object.entries(ORIGIN_BP)) addTrait(n,b,'origin');
+for (const [n,b] of Object.entries(CLASS_BP)) addTrait(n,b,'class');
+for (const n of UNIQUE_TRAITS) addTrait(n,[1],'unique');
+const NT = TRAITS.length;
+const T_SOLAR = TIDX['햇빛'], T_LUNAR = TIDX['달빛'];
+
+const UNIT = {};
+for (const u of UNITS){
+  const [id,name,en,cost,...traits] = u;
+  UNIT[id] = { id, name, en, cost, traits, slots: SLOTS[id]||1, special: SPECIAL[id]||null,
+               uniq: traits.find(t=>UNIQUE_TRAITS.includes(t))||null };
+}
+const ORDER = UNITS.map(u=>u[0]);
+
+/* ═══════════════════ 상태 ═══════════════════ */
+const S = {
+  size:8, pin:new Set(), ban:new Set(), req:[],           // req: [{t:traitIdx, need:count}]
+  emblems:[], embRecommended:true,                        // emblems: [{t:traitIdx}] 보유한 상징
+  lux:false, luxOrigin:'auto', kha:false, ren:false, ecl:false, rivalBoth:false,
+  costW:{1:1,2:2,3:3,4:5,5:8}, wSyn:3, wUtil:0.5, wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6,
+  traitW:new Float32Array(NT).fill(1), uniqW:{}, beam:400, nRes:5
+};
+for (const id of ['malphite','maokai','kogmaw','taric','zyra','ivern','alune','elder','draven','lux']) S.uniqW[id]=1;
+S.traitW[TIDX['치명적인 꽃']]=0.5; S.traitW[TIDX['경쟁자']]=0.5;
+const PRESETS = {
+  value:    {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0,    wOrphanUnit:0, wOrphan:0,   wUniq:1, wEcl:6},
+  balanced: {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0.5,  wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6},
+  synergy:  {costW:{1:1,2:1.5,3:2,4:3,5:4}, wSyn:4, wUtil:1,    wOrphanUnit:4, wOrphan:1,   wUniq:0.5, wEcl:6},
+};
+const REQ_BONUS = 60; // 탐색 유도용: 필수 시너지 진행도 1명당 (최종 점수에는 포함하지 않음)
+
+const $ = s=>document.querySelector(s);
+
+/* ═══════════════════ 후보 생성 ═══════════════════ */
+function makeCand(u, traitList, key, base, label){
+  const tv = new Map();
+  for (const t of traitList){ const i=TIDX[t]; if(i===undefined) continue; tv.set(i,(tv.get(i)||0)+1); }
+  return { key, id:u.id, base, name:u.name, label:label||u.name, cost:u.cost, slots:u.slots,
+           tv:[...tv.entries()], uniqW: u.uniq ? (S.uniqW[u.id]??1) : 0 };
+}
+function buildCandidates(){
+  const out=[];
+  for (const id of ORDER){
+    const u=UNIT[id];
+    if (S.ban.has(id)) continue;
+    if (u.special==='lux'){
+      if (!S.lux) continue;
+      const origins = S.luxOrigin==='auto' ? LUX_ORIGINS : [S.luxOrigin];
+      for (const o of origins) out.push(makeCand(u,['화신',o,o],'lux:'+o,'lux',`럭스 (${o})`));
+      continue;
+    }
+    if (u.special==='kha'){ if(!S.kha) continue; out.push(makeCand(u,u.traits,id,S.rivalBoth?null:'rival')); continue; }
+    if (u.special==='ren'){ if(!S.ren) continue; out.push(makeCand(u,u.traits,id,S.rivalBoth?null:'rival')); continue; }
+    out.push(makeCand(u,u.traits,id,null));
+  }
+  out.forEach((c,i)=>c.idx=i);
+  return out;
+}
+
+/* ═══════════════════ 점수 ═══════════════════ */
+const activeBuf = new Uint8Array(NT);
+function evalCounts(counts){
+  let syn=0, synW=0, orphan=0, util=0, tiers=[];
+  activeBuf.fill(0);
+  for (let i=0;i<NT;i++){
+    const c=counts[i]; if(!c) continue;
+    const t=TRAITS[i]; if(t.kind==='unique') continue;
+    let tier=0; for (const b of t.bps){ if(c>=b) tier++; else break; }
+    if (tier){ syn+=tier; synW+=tier*S.traitW[i]; util+=c; activeBuf[i]=1; } else orphan++;
+    tiers.push([i,c,tier]);
+  }
+  const ecl = S.ecl && counts[T_SOLAR]>=3 && counts[T_LUNAR]>=3;
+  return {syn,synW,orphan,util,ecl,tiers};
+}
+// 활성 특성이 하나도 없는 유닛 수 (고유 특성만 있는 유닛은 고유 특성이 있으므로 무소속으로 치지 않음)
+function loneUnits(st, cands){
+  let n=0;
+  for (const idx of st.units){
+    const c=cands[idx]; let ok=false;
+    for (const [i] of c.tv){ if (activeBuf[i] || TRAITS[i].kind==='unique'){ ok=true; break; } }
+    if (!ok) n++;
+  }
+  return n;
+}
+// 상징 적용: 팀 안에서 상징을 줄 유닛(그 특성이 없는 유닛, 추천 모드면 추천 목록 안)을 골라 특성 +1
+function applyEmblems(st, cands){
+  if (!S.emblems.length){ st.eff=st.counts; st.holders=[]; st.embMissing=0; return; }
+  const eff=new Uint8Array(st.counts); const holders=[]; let missing=0; const used=new Set();
+  for (const e of S.emblems){
+    let pick=-1;
+    const okUnit=idx=>{ const c=cands[idx]; if(used.has(idx)) return false; if(c.tv.some(([i])=>i===e.t)) return false; return true; };
+    if (S.embRecommended){
+      for (const id of (EMBLEM_HOLDERS[TRAITS[e.t].name]||[])){ const idx=st.units.find(u=>cands[u].id===id && okUnit(u)); if(idx!==undefined){ pick=idx; break; } }
+    } else {
+      // 아무 유닛: 상징을 받아도 다른 특성이 가장 많이 살아 있는(코스트 높은) 유닛 우선
+      const cand=st.units.filter(okUnit).sort((a,b)=>cands[b].cost-cands[a].cost); if(cand.length) pick=cand[0];
+    }
+    if (pick>=0){ used.add(pick); eff[e.t]+=1; holders.push({t:e.t, idx:pick}); } else missing++;
+  }
+  st.eff=eff; st.holders=holders; st.embMissing=missing;
+}
+function scoreOf(st, cands){
+  if (!st.eff) applyEmblems(st, cands);
+  const e=evalCounts(st.eff);
+  const lone=loneUnits(st, cands);
+  const cost=st.costPts, uniq=st.uniqPts;
+  const total = cost + S.wSyn*e.synW + S.wUtil*e.util + S.wUniq*uniq + (e.ecl?S.wEcl:0) - S.wOrphan*e.orphan - S.wOrphanUnit*lone;
+  return {total, cost, syn:e.syn, synW:e.synW, util:e.util, lone, uniq, ecl:e.ecl, orphan:e.orphan, tiers:e.tiers, active:Uint8Array.from(activeBuf), holders:st.holders||[], embMissing:st.embMissing||0};
+}
+function reqProgress(counts){ let p=0; for (const r of S.req) p+=Math.min(counts[r.t], r.need); return p; }
+function reqSatisfied(counts){ return S.req.every(r=>counts[r.t]>=r.need); }
+function reqDeficit(counts){ let d=0; for (const r of S.req) d=Math.max(d, r.need-counts[r.t]); return d; }
+function newState(){ const s={units:[], slots:0, counts:new Uint8Array(NT), costPts:0, uniqPts:0, bases:new Set(), score:0, guide:0}; s.eff=s.counts; s.holders=[]; s.embMissing=S.emblems.length; return s; }
+function addUnit(st,c,cands){
+  const ns={ units:st.units.concat(c.idx), slots:st.slots+c.slots, counts:new Uint8Array(st.counts),
+             costPts:st.costPts+S.costW[c.cost], uniqPts:st.uniqPts+c.uniqW, bases:st.bases, score:0, guide:0 };
+  if (c.base){ ns.bases=new Set(st.bases); ns.bases.add(c.base); }
+  for (const [i,n] of c.tv) ns.counts[i]+=n;
+  applyEmblems(ns, cands);
+  ns.score=scoreOf(ns, cands).total;
+  ns.guide=ns.score + REQ_BONUS*(reqProgress(ns.eff) + (S.emblems.length-ns.embMissing));   // 빔 정렬용 (필수 시너지·상징 진행도 반영)
+  return ns;
+}
+function canAdd(st,c,size){
+  if (st.slots+c.slots>size) return false;
+  if (st.units.includes(c.idx)) return false;
+  if (c.base && st.bases.has(c.base)) return false;
+  return true;
+}
+const keyOf=st=>st.units.slice().sort((a,b)=>a-b).join(',');
+
+/* ═══════════════════ 탐색: 빔 서치 + 스왑 개선 ═══════════════════ */
+function search(){
+  const cands=buildCandidates();
+  const size=S.size;
+  // 필수 시너지 실현 가능성 (후보 전체를 다 넣어도 못 채우면 즉시 안내)
+  for (const r of S.req){
+    let maxCnt=0, luxDone=false;
+    for (const c of cands){ const n=(c.tv.find(x=>x[0]===r.t)||[0,0])[1]; if(!n) continue; if(c.base==='lux'){ if(luxDone) continue; luxDone=true; } maxCnt+=n; }
+    if (maxCnt<r.need) throw new Error(`${TRAITS[r.t].name} ${r.need}은(는) 현재 후보로 채울 수 없습니다 (최대 ${maxCnt}). 제외한 유닛이나 특수 유닛 토글을 확인하세요.`);
+  }
+  // 고정 유닛
+  let st=newState();
+  const pinnedKeys=[];
+  const luxAuto = S.pin.has('lux') && S.luxOrigin==='auto';
+  for (const id of S.pin){
+    if (id==='lux' && luxAuto){ pinnedKeys.push('lux'); continue; } // 계열 자동이면 변형별로 시작 상태를 나눔
+    const c = id==='lux' ? cands.find(x=>x.key==='lux:'+S.luxOrigin) : cands.find(x=>x.id===id);
+    if (!c) throw new Error(`${UNIT[id].name}은(는) 현재 설정에서 후보가 아닙니다.`);
+    if (!canAdd(st,c,size)) throw new Error(`고정 유닛이 팀 크기(${size})를 넘거나 서로 충돌합니다: ${c.name}`);
+    st=addUnit(st,c,cands); pinnedKeys.push(c.key);
+  }
+  let starts=[st];
+  if (luxAuto){
+    starts=[];
+    for (const c of cands.filter(x=>x.base==='lux')) if (canAdd(st,c,size)) starts.push(addUnit(st,c,cands));
+    if (!starts.length) throw new Error('럭스를 고정할 슬롯이 없습니다.');
+  }
+  const W=S.beam;
+  let beam=starts, finals=new Map();
+  let evals=0;
+  while (beam.length){
+    const next=new Map();
+    for (const s of beam){
+      if (s.slots===size){ if (reqSatisfied(s.eff) && (!S.embRecommended || s.embMissing===0)){ const k=keyOf(s); if(!finals.has(k)) finals.set(k,s); } continue; }
+      const remain=size-s.slots;
+      for (const c of cands){
+        if (!canAdd(s,c,size)) continue;
+        const ns=addUnit(s,c,cands); evals++;
+        if (Math.max(reqDeficit(ns.eff), S.embRecommended?ns.embMissing:0) > remain-c.slots) continue;   // 남은 슬롯으로 필수 시너지·상징 보유자를 못 채우면 가지치기
+        const k=keyOf(ns);
+        if (!next.has(k)) next.set(k,ns);
+      }
+    }
+    beam=[...next.values()].sort((a,b)=>b.guide-a.guide).slice(0,W);
+  }
+  // 스왑 개선 (상위 결과 대상, 필수 시너지·고정 유지)
+  let list=[...finals.values()].sort((a,b)=>b.score-a.score).slice(0,Math.max(150,S.nRes*20));
+  const improved=new Map();
+  for (let s of list){
+    let changed=true, guard=0;
+    while (changed && guard++<20){
+      changed=false;
+      for (let i=0;i<s.units.length;i++){
+        const out=cands[s.units[i]];
+        if (pinnedKeys.includes(out.key) || (out.base==='lux'&&pinnedKeys.includes('lux'))) continue;
+        let base=newState();
+        for (let j=0;j<s.units.length;j++) if(j!==i) base=addUnit(base,cands[s.units[j]],cands);
+        for (const c of cands){
+          if (!canAdd(base,c,size) || base.slots+c.slots!==size) continue;
+          const ns=addUnit(base,c,cands); evals++;
+          if (ns.score>s.score+1e-9 && reqSatisfied(ns.eff) && (!S.embRecommended || ns.embMissing===0)){ s=ns; changed=true; break; }
+        }
+        if (changed) break;
+      }
+    }
+    const k=keyOf(s); if(!improved.has(k)) improved.set(k,s);
+  }
+  let ranked=[...improved.values()].sort((a,b)=>b.score-a.score);
+  // 다양성: 이미 고른 팀과 2개 이상 다를 때만 채택, 부족하면 나머지로 채움
+  const picked=[];
+  for (const s of ranked){
+    const set=new Set(s.units);
+    const dup=picked.some(p=>{ let same=0; for(const u of p.units) if(set.has(u)) same++; return s.units.length-same<2; });
+    if (!dup) picked.push(s);
+    if (picked.length>=S.nRes) break;
+  }
+  if (picked.length<S.nRes) for (const s of ranked){ if(!picked.includes(s)) picked.push(s); if(picked.length>=S.nRes) break; }
+  picked.sort((a,b)=>b.score-a.score);
+  return {teams:picked, cands, evals, pinnedKeys};
+}
+
+/* ═══════════════════ UI: 설정 ═══════════════════ */
+function readNumbers(){
+  document.querySelectorAll('#costW input').forEach(i=>S.costW[i.dataset.cost]=+i.value||0);
+  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl']) S[k]=+$('#'+k).value||0;
+  S.beam=Math.min(3000,Math.max(50,+$('#beamW').value||400)); S.nRes=Math.min(20,Math.max(1,+$('#nRes').value||5));
+  document.querySelectorAll('#uniqW input').forEach(i=>S.uniqW[i.dataset.id]=+i.value||0);
+  document.querySelectorAll('#traitW input').forEach(i=>S.traitW[+i.dataset.t]=+i.value||0);
+}
+function applyPreset(name){
+  const p=PRESETS[name]; if(!p) return;
+  document.querySelectorAll('#costW input').forEach(i=>i.value=p.costW[i.dataset.cost]);
+  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl']) $('#'+k).value=p[k];
+  $('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.preset===name));
+}
+$('#presetSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) applyPreset(b.dataset.preset); });
+// 수치를 직접 고치면 프리셋 표시 해제
+document.querySelectorAll('.settings input.num:not(#embN)').forEach(i=>i.addEventListener('input',()=>$('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'))));
+
+/* 특성별 가중치 표 */
+$('#traitW').innerHTML=TRAITS.map((t,i)=>t.kind==='unique'?'':`<span class="k">${t.name}</span><input class="num" type="number" step="0.25" min="0" data-t="${i}" value="${S.traitW[i]}">`).join('');
+
+/* 필수 시너지 */
+const reqTrait=$('#reqTrait'), reqTier=$('#reqTier');
+reqTrait.innerHTML=TRAITS.map((t,i)=>t.kind==='unique'?'':`<option value="${i}">${t.name}</option>`).join('');
+function fillTiers(){ const t=TRAITS[+reqTrait.value]; reqTier.innerHTML=t.bps.map(b=>`<option value="${b}">${b}</option>`).join(''); }
+reqTrait.addEventListener('change',fillTiers); fillTiers();
+$('#reqAdd').addEventListener('click',()=>{
+  const t=+reqTrait.value, need=+reqTier.value;
+  const ex=S.req.find(r=>r.t===t); if(ex) ex.need=need; else S.req.push({t,need});
+  renderReq();
+});
+function renderReq(){
+  const el=$('#reqList');
+  if (!S.req.length){ el.innerHTML='<span class="hint" style="margin:0">지정된 필수 시너지가 없습니다.</span>'; return; }
+  el.innerHTML=S.req.map((r,i)=>`<span class="chip req"><span class="n">${r.need}</span>${TRAITS[r.t].name}<button type="button" class="x" data-i="${i}" aria-label="삭제">×</button></span>`).join('');
+  const minUnits=S.req.reduce((a,r)=>Math.max(a,r.need),0);
+  if (minUnits>S.size) el.insertAdjacentHTML('beforeend',`<span class="hint warn" style="margin:0;width:100%">필수 시너지에 최소 ${minUnits}명이 필요해 팀 크기 ${S.size}를 넘습니다.</span>`);
+}
+$('#reqList').addEventListener('click',e=>{ const b=e.target.closest('.x'); if(!b) return; S.req.splice(+b.dataset.i,1); renderReq(); });
+$('#sizeSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  S.size=+b.dataset.size;
+  $('#sizeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  renderPins(); renderReq(); renderEmblems();
+});
+function setSwitch(el,on){ el.setAttribute('aria-checked',on?'true':'false'); }
+function bindSwitch(id,key,after){
+  const el=$(id);
+  el.addEventListener('click',()=>{ if(el.disabled) return; S[key]=!S[key]; setSwitch(el,S[key]); after&&after(); syncSpecial(); });
+}
+bindSwitch('#swLux','lux'); bindSwitch('#swKha','kha'); bindSwitch('#swRen','ren'); bindSwitch('#swEcl','ecl'); bindSwitch('#swRivalBoth','rivalBoth');
+const luxSel=$('#luxOrigin');
+luxSel.innerHTML='<option value="auto">자동 (최적 계열)</option>'+LUX_ORIGINS.map(o=>`<option value="${o}">${o}</option>`).join('');
+luxSel.addEventListener('change',()=>{ S.luxOrigin=luxSel.value; renderPins(); renderRoster(); });
+function syncSpecial(){
+  $('#luxRow').hidden=!S.lux;
+  // 카직스/렝가 상호 배타
+  $('#swKha').disabled=S.ren&&!S.rivalBoth; $('#swRen').disabled=S.kha&&!S.rivalBoth;
+  if (!S.lux) S.pin.delete('lux'); if (!S.kha) S.pin.delete('khazix'); if (!S.ren) S.pin.delete('rengar');
+  renderPins(); renderRoster();
+}
+// 고유 특성 개별 가중치
+$('#uniqW').innerHTML=Object.keys(S.uniqW).map(id=>`<span class="k">${UNIT[id].name} · ${UNIT[id].uniq}</span><input class="num" type="number" step="0.5" data-id="${id}" value="1">`).join('');
+
+/* ═══════════════════ UI: 로스터 ═══════════════════ */
+function cycle(id){
+  const u=UNIT[id];
+  if (u.special && u.special!=='elder'){
+    const key={lux:'lux',kha:'kha',ren:'ren'}[u.special];
+    if (!S[key]){
+      if (!S.rivalBoth && (key==='kha'&&S.ren || key==='ren'&&S.kha)){ $('#runMsg').className='hint warn'; $('#runMsg').textContent='카직스와 렝가는 동시에 후보로 둘 수 없습니다.'; return; }
+      S[key]=true; setSwitch($('#sw'+key[0].toUpperCase()+key.slice(1)),true); syncSpecial();
+    }
+  }
+  if (S.pin.has(id)){ S.pin.delete(id); S.ban.add(id); }
+  else if (S.ban.has(id)){ S.ban.delete(id); }
+  else { S.pin.add(id); }
+  renderPins(); renderRoster();
+}
+function unitState(id){ return S.pin.has(id)?'pin':S.ban.has(id)?'ban':''; }
+function isOff(u){ return (u.special==='lux'&&!S.lux)||(u.special==='kha'&&!S.kha)||(u.special==='ren'&&!S.ren); }
+function traitText(u){
+  if (u.special==='lux') return '화신 + '+(S.luxOrigin==='auto'?'선택 계열 ×2':S.luxOrigin+' ×2');
+  if (u.special==='elder') return '협곡야수 ×2 · 최상위 포식자 · 슬롯 2';
+  if (u.special==='kha') return '경쟁자 (+약탈자·속사포·주문술사·처형자)';
+  return u.traits.join(' · ');
+}
+function renderRoster(){
+  const q=$('#q').value.trim();
+  const box=$('#roster'); let html='';
+  for (let cost=1;cost<=5;cost++){
+    const us=ORDER.map(id=>UNIT[id]).filter(u=>u.cost===cost);
+    html+=`<div class="tier"><h3><span class="dot k${cost}"></span>${cost}코스트 <span class="n">${us.length}</span></h3><div class="units">`;
+    for (const u of us){
+      const hay=(u.name+' '+u.en+' '+(ALIAS[u.id]||'')+' '+traitText(u)+' '+(BIS[u.id]||[]).join(' ')).toLowerCase();
+      const hide=q && !hay.includes(q.toLowerCase());
+      const cls=['u',unitState(u.id),isOff(u)?'off':'',hide?'hide':''].join(' ');
+      const tag=u.special==='elder'?'슬롯 2':u.special?'특수':(ALIAS[u.id]||'');
+      const items=(BIS[u.id]||[]).map((n,k)=>`<button type="button" class="islot" data-id="${u.id}" data-k="${k}" title="${itemTitle(n)}">${itemSvg(n,24)}</button>`).join('');
+      html+=`<div class="${cls}" style="--cc:var(--c${cost})" data-id="${u.id}"><button type="button" class="ubtn" title="${u.en}"><span class="nm">${u.name}${tag?`<span class="tag">${tag}</span>`:''}</span><span class="tr">${traitText(u)}</span></button><div class="items">${items}</div></div>`;
+    }
+    html+='</div></div>';
+  }
+  box.innerHTML=html;
+}
+$('#roster').addEventListener('click',e=>{
+  const s=e.target.closest('.islot'); if(s){ openPicker(s); return; }
+  const b=e.target.closest('.u'); if(b) cycle(b.dataset.id);
+});
+/* 삼신기 편집 팝오버 */
+const picker=document.createElement('div'); picker.className='picker'; picker.hidden=true; document.body.appendChild(picker);
+let pickTarget=null;
+function openPicker(slotBtn){
+  pickTarget={id:slotBtn.dataset.id, k:+slotBtn.dataset.k};
+  const cur=BIS[pickTarget.id][pickTarget.k];
+  picker.innerHTML=`<div class="ph"><b>${UNIT[pickTarget.id].name}</b> · ${pickTarget.k+1}번 아이템 교체 <button type="button" class="x" id="pkClose" aria-label="닫기">×</button></div>
+    <div class="pg">${ITEM_NAMES.map(n=>`<button type="button" class="pi ${n===cur?'cur':''}" data-n="${n}" title="${itemTitle(n)}">${itemSvg(n,26)}<span>${n}</span></button>`).join('')}</div>`;
+  picker.hidden=false;
+  const r=slotBtn.getBoundingClientRect(), pw=Math.min(420,window.innerWidth-16);
+  picker.style.width=pw+'px';
+  picker.style.left=Math.max(8,Math.min(r.left, window.innerWidth-pw-8))+'px';
+  const below=r.bottom+8, ph=picker.offsetHeight;
+  picker.style.top=(below+ph>window.innerHeight-8 && r.top-ph-8>8 ? r.top-ph-8 : below)+'px';
+}
+picker.addEventListener('click',e=>{
+  if (e.target.closest('#pkClose')){ picker.hidden=true; return; }
+  const b=e.target.closest('.pi'); if(!b||!pickTarget) return;
+  BIS[pickTarget.id][pickTarget.k]=b.dataset.n; picker.hidden=true; renderRoster();
+  if ($('#out .team')) $('#runBtn').click();
+});
+document.addEventListener('click',e=>{ if(!picker.hidden && !picker.contains(e.target) && !e.target.closest('.islot')) picker.hidden=true; });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') picker.hidden=true; });
+$('#bisReset').addEventListener('click',()=>{ for (const id in BIS_DEFAULT) BIS[id]=BIS_DEFAULT[id].slice(); renderRoster(); });
+$('#bisCopy').addEventListener('click',async()=>{
+  const txt=ORDER.map(id=>`${UNIT[id].name}: ${(BIS[id]||[]).join(', ')}`).join('\n');
+  try{ await navigator.clipboard.writeText(txt); $('#bisCopy').textContent='복사됨'; setTimeout(()=>$('#bisCopy').textContent='삼신기 목록 복사',1500); }
+  catch(e){ window.prompt('복사해서 사용하세요', txt); }
+});
+$('#q').addEventListener('input',renderRoster);
+function renderPins(){
+  const el=$('#pinList');
+  const items=[...S.pin].map(id=>['pin',id]).concat([...S.ban].map(id=>['ban',id]));
+  if (!items.length){ el.innerHTML='<span class="hint" style="margin:0">오른쪽 목록에서 유닛을 클릭하면 고정됩니다. 한 번 더 클릭하면 제외, 다시 클릭하면 해제.</span>'; return; }
+  el.innerHTML=items.map(([k,id])=>{ const u=UNIT[id]; const nm=id==='lux'?`럭스${S.luxOrigin!=='auto'?' ('+S.luxOrigin+')':''}`:u.name;
+    return `<span class="chip ${k}"><span class="dot k${u.cost}"></span>${nm}${k==='ban'?' <span style="color:var(--muted)">제외</span>':''}<button type="button" class="x" data-id="${id}" aria-label="해제">×</button></span>`; }).join('');
+  const used=[...S.pin].reduce((a,id)=>a+UNIT[id].slots,0);
+  if (used>S.size) el.insertAdjacentHTML('beforeend',`<span class="hint warn" style="margin:0;width:100%">고정 슬롯 ${used} &gt; 팀 크기 ${S.size}</span>`);
+}
+$('#pinList').addEventListener('click',e=>{ const b=e.target.closest('.x'); if(!b) return; S.pin.delete(b.dataset.id); S.ban.delete(b.dataset.id); renderPins(); renderRoster(); });
+
+/* ═══════════════════ UI: 결과 ═══════════════════ */
+function renderResults(r){
+  const {teams,cands,evals,pinnedKeys}=r;
+  $('#stat').textContent=`${teams.length}개 팀 · 평가 ${evals.toLocaleString()}회`;
+  if (!teams.length){ $('#out').innerHTML='<div class="empty">조건을 만족하는 팀을 찾지 못했습니다.<br>필수 시너지·고정·제외 설정이나 팀 크기를 확인하세요.<br>필수 시너지가 여러 개면 빔 폭을 늘려 보세요.</div>'; return; }
+  const reqSet=new Set(S.req.map(r=>r.t));
+  let html='';
+  teams.forEach((s,ri)=>{
+    const sc=scoreOf(s,cands);
+    const us=s.units.map(i=>cands[i]).sort((a,b)=>b.cost-a.cost||a.name.localeCompare(b.name,'ko'));
+    const costSum=us.reduce((a,c)=>a+c.cost,0);
+    const isLone=c=>!c.tv.some(([i])=>sc.active[i]||TRAITS[i].kind==='unique');
+    const holderOf={}; for (const h of sc.holders) holderOf[h.idx]=TRAITS[h.t].name;
+    const uHtml=us.map(c=>`<span class="tu ${pinnedKeys.includes(c.key)||(c.base==='lux'&&pinnedKeys.includes('lux'))?'pinned':''} ${isLone(c)?'lone':''} ${holderOf[c.idx]?'emb':''}" style="--cc:var(--c${c.cost})" title="${c.tv.map(([i])=>TRAITS[i].name).join(' · ')}${holderOf[c.idx]?' · '+holderOf[c.idx]+' 상징 장착':''}"><span class="cbox">${c.cost}</span>${c.label}${holderOf[c.idx]?`<span class="embtag">${holderOf[c.idx]} 상징</span>`:''}${c.slots>1?'<span class="sub">슬롯 2</span>':''}<span class="tuitems">${(BIS[c.id]||[]).map(n=>`<span title="${itemTitle(n)}">${itemSvg(n,16)}</span>`).join('')}</span></span>`).join('');
+    const active=sc.tiers.filter(t=>t[2]>0).sort((a,b)=>(reqSet.has(b[0])-reqSet.has(a[0]))||b[2]-a[2]||b[1]-a[1]);
+    const inactive=sc.tiers.filter(t=>t[2]===0).sort((a,b)=>b[1]-a[1]);
+    const uniqs=[]; for(let i=0;i<NT;i++) if(TRAITS[i].kind==='unique'&&s.counts[i]) uniqs.push(TRAITS[i].name);
+    const pip=(t)=>`<span class="pips">${TRAITS[t[0]].bps.map((b,k)=>`<i class="${k<t[2]?'f':''}"></i>`).join('')}</span>`;
+    const embCnt={}; for (const h of sc.holders) embCnt[h.t]=(embCnt[h.t]||0)+1;
+    const tHtml=active.map(t=>`<span class="tt on ${reqSet.has(t[0])?'req':''}" title="${TRAITS[t[0]].bps.join('/')} · 가중치 ${S.traitW[t[0]]}${embCnt[t[0]]?` · 상징 +${embCnt[t[0]]} 포함`:''}"><span class="n">${t[1]}</span>${TRAITS[t[0]].name}${embCnt[t[0]]?`<span class="embtag">+상징${embCnt[t[0]]>1?'×'+embCnt[t[0]]:''}</span>`:''}${pip(t)}</span>`).join('')
+      + uniqs.map(n=>`<span class="tt uniq">${n}</span>`).join('')
+      + inactive.map(t=>`<span class="tt off"><span class="n">${t[1]}</span>${TRAITS[t[0]].name}</span>`).join('');
+    const bd=[`<span>코스트 <b>${sc.cost}</b></span>`, `<span>시너지 <b>${(S.wSyn*sc.synW).toFixed(1)}</b> (${sc.syn}단계)</span>`];
+    if (S.wUtil) bd.push(`<span>참여 <b>${(S.wUtil*sc.util).toFixed(1)}</b> (${sc.util}명)</span>`);
+    if (S.wUniq&&sc.uniq) bd.push(`<span>고유 <b>${(S.wUniq*sc.uniq).toFixed(1)}</b></span>`);
+    if (sc.ecl) bd.push(`<span class="eclipse">일월식 +${S.wEcl}</span>`);
+    if (S.wOrphanUnit&&sc.lone) bd.push(`<span>무소속 −${(S.wOrphanUnit*sc.lone).toFixed(1)} (${sc.lone}명)</span>`);
+    if (S.wOrphan&&sc.orphan) bd.push(`<span>미활성 −${(S.wOrphan*sc.orphan).toFixed(1)} (${sc.orphan}개)</span>`);
+    const code=teamCode(us.map(c=>c.id));
+    html+=`<div class="team"><div class="th"><span class="rank">${ri+1}</span><span class="score">${sc.total.toFixed(1)}<small>점</small></span><span class="costsum">코스트 합 <b>${costSum}</b> · 슬롯 ${s.slots}</span><button type="button" class="codebtn" data-code="${code}" title="${code}">팀 코드 복사</button></div>
+      <div class="tunits">${uHtml}</div><div class="traits">${tHtml}</div>
+      <div class="breakdown">${bd.join('')}</div></div>`;
+  });
+  $('#out').innerHTML=html;
+}
+$('#out').addEventListener('click',e=>{ const b=e.target.closest('.codebtn'); if(b) copyText(b.dataset.code,'팀 코드 복사'); });
+$('#runBtn').addEventListener('click',()=>{
+  readNumbers();
+  const btn=$('#runBtn'); btn.disabled=true; btn.textContent='계산 중…'; $('#runMsg').textContent='';
+  setTimeout(()=>{
+    try{ const t0=performance.now(); const r=search(); renderResults(r); $('#runMsg').className='hint'; $('#runMsg').textContent=`${((performance.now()-t0)/1000).toFixed(2)}초`; }
+    catch(err){ $('#runMsg').textContent=err.message; $('#runMsg').className='hint warn'; }
+    finally{ btn.disabled=false; btn.textContent='팀 구성'; }
+  },20);
+});
+
+/* ═══════════════════ 팀 코드 (인게임 팀 플래너 붙여넣기) ═══════════════════ */
+// 형식: "02" + 슬롯 10개 × 3자리 16진수(team_planner_code, 빈 슬롯 000) + "TFTSet18"
+// 출처: Community Dragon tftchampions-teamplanner.json (TFTSet18, 2026-08-31)
+const TEAM_CODE = {gromp:1026,murkwolf:1049,pebbles:1065,cinderling:1015,scuttle:1062,krug:1039,sentinel:1064,bramble:1011,xayah:1081,ornn:1055,nidalee:1051,hecarim:1027,ezreal:1023,azir:1009,reksai:1059,veigar:1078,maokai:1045,malphite:1044,yorick:1082,yunara:1083,sett:1066,ahri:1001,ashe:1008,elise:1021,caitlyn:1012,cassiopeia:1014,morgana:1048,rakan:1056,lillia:1042,kobuko:1085,teemo:1073,rammus:1057,gnar:1025,tristana:1075,sivir:1068,vi:1079,akali:1002,varus:1077,amumu:1005,kennen:1035,aphelios:1007,diana:1018,alune:1004,leona:1041,kayle:1034,sejuani:1063,khazix:1036,rengar:1060,kogmaw:1038,zyra:1084,fiddle:1024,soraka:1070,taric:1072,ivern:1029,lux:1043,alistar:1003,draven:1019,elder:1020,karma:1031,leblanc:1040,masteryi:1046,shen:1067,warwick:1080,camille:1013,raptor:1058};
+const CODE2ID = {}; for (const id in TEAM_CODE) CODE2ID[TEAM_CODE[id]]=id;
+const SET_TAG = 'TFTSet18';
+function teamCode(ids){
+  const us=[...new Set(ids)].map(id=>UNIT[id]).filter(Boolean).sort((a,b)=>a.cost-b.cost||a.name.localeCompare(b.name,'ko')).slice(0,10);
+  const body=us.map(u=>TEAM_CODE[u.id].toString(16).padStart(3,'0')).join('');
+  return '02'+body.padEnd(30,'0')+SET_TAG;
+}
+function parseTeamCode(code){
+  const s=(code||'').trim();
+  const m=s.match(/^(\d\d)([0-9a-fA-F]+)(TFTSet\d+)$/);
+  if (!m) return {error:'팀 코드 형식이 아닙니다. 예: 0242940240f4283f34013fc430000000TFTSet18'};
+  if (m[3]!==SET_TAG) return {error:`${m[3]} 코드입니다. 이 빌더는 ${SET_TAG} 코드만 읽습니다.`};
+  const hex=m[2], ids=[], unknown=[];
+  const width = m[1]==='01' ? 2 : 3;
+  for (let i=0;i+width<=hex.length;i+=width){ const v=parseInt(hex.slice(i,i+width),16); if(!v) continue; const id=CODE2ID[v]; if(id){ if(!ids.includes(id)) ids.push(id); } else unknown.push(v); }
+  if (!ids.length) return {error:'코드에서 유닛을 찾지 못했습니다.'+(unknown.length?` (알 수 없는 번호: ${unknown.join(', ')})`:'')};
+  return {ids,unknown};
+}
+async function copyText(txt, label){
+  try{ await navigator.clipboard.writeText(txt); toast((label||'복사')+'됨 — 인게임 팀 플래너에서 붙여넣기'); return; }catch(e){}
+  showCodeBox(txt);
+}
+function showCodeBox(txt){
+  let box=document.querySelector('.codebox');
+  if(!box){ box=document.createElement('div'); box.className='codebox'; box.innerHTML='<div class="ph"><b>팀 코드</b><span class="hint" style="margin:0">자동 복사가 막혀 있어 직접 복사하세요 (Ctrl+C)</span><button type="button" class="x" aria-label="닫기">×</button></div><input type="text" readonly spellcheck="false">'; document.body.appendChild(box);
+    box.querySelector('.x').addEventListener('click',()=>box.hidden=true); }
+  const inp=box.querySelector('input'); inp.value=txt; box.hidden=false; inp.focus(); inp.select();
+}
+function loadTeamCode(code){
+  const r=parseTeamCode(code); if(r.error){ toast(r.error); return; }
+  loadDeckAsPins({ko:'팀 코드', units:r.ids, unknown:[]});
+  if (r.unknown.length) toast(`알 수 없는 유닛 번호 ${r.unknown.length}개는 건너뛰었습니다`);
+}
+$('#codeLoad').addEventListener('click',()=>loadTeamCode($('#codeIn').value));
+$('#codeIn').addEventListener('keydown',e=>{ if(e.key==='Enter') loadTeamCode($('#codeIn').value); });
+
+/* ═══════════════════ 메타 덱 ═══════════════════ */
+// 형식: 티어 | 덱 이름 | 유닛, 유닛, ...   (출처: tftactics.gg team comps, 2026-08-31)
+// 메타 덱 출처 2개. 형식: 티어 | 덱 이름 | 유닛, … | 메모(선택)
+// op.gg: https://op.gg/ko/tft/meta-trends/comps (한국어, 평균 등수·순방 확률; 티어는 평균 등수로 계산: ≤2.6 S, ≤3.1 A, ≤3.6 B, ≤4.2 C, 그 외 D)
+// tftactics.gg: https://tftactics.gg/tierlist/team-comps/ (사이트 자체 티어)
+const META_SOURCES = {
+  tftlabs:   { label:'tftlabs', source:'tftlabs.cc · 2026-09-01 (패치 18.1d) — 목록에서 읽히는 대표 유닛만, 전체 구성은 exe 자동 업데이트로', text:`S | 카직스 OP | 카직스 | 약탈자 상징 · 저주받은 왕관
+S | 7협곡야수 조약돌 | 조약돌, 심술두꺼비, 돌거북, 감시자, 덩굴정령, 나르, 장로 드래곤, 타릭 | 팀 코드 확인 완료
+S | 베이가 리롤 | 베이가 | 새벽심장 · 치명적인꽃 상징 · 루덴의 폭풍
+S | 저받왕 케일 | 케일 | 저주받은 왕관
+A | 장로 드래곤 벨류 | 장로 드래곤
+A | 드레이븐 벨류 | 드레이븐
+A | 검은 가시 소라카 | 소라카
+A | 개화 벨류 | 애쉬
+A | 케일 리롤 | 케일
+A | 카직스 렝가 | 카직스, 렝가 | 일인자 증강
+A | 4요정 트타 리롤 | 트리스타나 | 요정 상징
+A | 적응가 리롤 | 마스터 이 | 위츠엔드 · 지옥불 손도끼 · 싸움꾼 상징
+A | 6엄호대 카시 | 카시오페아 | 엄호대 상징 · 대천사의 지팡이
+A | 전쟁기계 사냥꾼 | 시비르
+A | 아리 몰가 | 아리, 모르가나 | 기원자 상징
+B | 선봉대 아펠 | 아펠리오스
+B | 기원자 니달리 | 니달리
+B | 케틀 리롤 | 케이틀린
+B | 기원자 모르가나 | 모르가나 | 역병의 보석 · 기원자 상징
+C | 티모 리롤 | 티모
+C | 칼부 렝가 | 렝가
+C | 유나라 리롤 | 유나라` },
+  metatft:   { label:'MetaTFT', source:'MetaTFT · 2026-09-07 (스크린샷 판독)', text:`S | 적응가 마스터 이 | 마스터 이, 바이, 코그모, 세트, 니달리, 돌거북, 요릭 | 7레벨
+S | 날렵이 베이가 | 베이가, 렉사이, 티모, 피들스틱, 나르, 세트, 람머스, 코부코 | 5레벨 리롤
+S | 협곡야수 감시자 | 감시자, 장로 드래곤, 덩굴정령, 조약돌, 나르, 타릭, 돌거북, 어스름 늑대 | 빠른 9레벨
+S | 사냥꾼 시비르 니달리 | 시비르, 니달리, 말파이트, 감시자, 코그모, 돌거북, 렉사이, 불타는 묘목 | 빠른 8레벨
+A | 기원자 아리 | 아리, 모르가나, 세트, 감시자, 타릭, 돌거북, 조약돌, 카르마 | 빠른 8레벨
+A | 처형자 소라카 | 소라카, 말파이트, 자이라, 아무무, 케넨, 아지르, 피들스틱, 요릭 | 빠른 8레벨
+A | 사냥꾼 케이틀린 | 케이틀린, 바위 게, 시비르, 세주아니, 애쉬, 트리스타나, 바이, 라칸 | 6레벨 리롤
+A | 처형자 드레이븐 | 드레이븐, 마오카이, 이즈리얼, 케넨, 나르, 아이번, 타릭, 아무무, 알리스타 | 빠른 9레벨
+A | 엄호대 카시오페아 | 카시오페아, 피들스틱, 람머스, 릴리아, 쉔, 레오나, 오른 | 7레벨
+A | 나무정령 아펠리오스 | 아펠리오스, 릴리아, 헤카림, 알룬, 나르, 다이애나, 알리스타, 오른, 자야 | 평균 4.41 · 순방 51.2%
+A | 사냥꾼 시비르 | 시비르, 아무무, 애쉬, 릴리아, 아이번, 케넨, 트리스타나, 바이, 쉔 | 평균 4.43 · 순방 50.7%
+A | 경쟁자 카직스 | 카직스, 렝가, 헤카림, 다이애나, 아펠리오스, 이즈리얼, 르블랑 | 평균 4.43 · 순방 51.2% · 7레벨
+A | 요정 렝가 | 렝가, 트리스타나, 람머스, 바이, 릴리아, 코부코, 라칸 | 평균 4.43 · 순방 49.5% · 7레벨
+A | 기원자 모르가나 | 모르가나, 감시자, 덩굴정령, 타릭, 다이애나, 헤카림, 코그모, 조약돌 | 평균 4.49 · 순방 49.8%
+A | 처형자 세트 | 세트, 아리, 소라카, 이즈리얼, 나르, 피들스틱, 유나라, 오른 | 평균 4.49 · 순방 50.3%
+B | 개화 세트 | 세트, 아리, 애쉬, 시비르, 나르, 자이라, 바이, 요릭, 카르마 | 평균 4.53 · 순방 48.6%
+B | 선봉대 아펠리오스 | 아펠리오스, 감시자, 덩굴정령, 어미 부리, 타릭, 자이라, 다이애나, 헤카림 | 평균 4.55 · 순방 49.8%
+B | 적응가 니달리 | 니달리, 덩굴정령, 아무무, 감시자, 코그모, 바이, 심술두꺼비, 아칼리 | 평균 4.56 · 순방 49.7%
+B | 기원자 조약돌 | 조약돌, 감시자, 모르가나, 장로 드래곤, 돌거북, 바위 게, 불타는 묘목 | 평균 4.57 · 순방 49.3% · 5레벨
+B | 날렵이 티모 | 티모, 람머스, 모르가나, 트리스타나, 릴리아, 감시자, 코부코, 베이가 | 평균 4.57 · 순방 49.2% · 6레벨
+B | 기원자 니달리 | 니달리, 감시자, 모르가나, 코그모, 타릭, 바이, 바위 게, 조약돌 | 평균 4.59 · 순방 49.0%
+B | 협곡야수 조약돌 | 조약돌, 돌거북, 불타는 묘목, 나르, 덩굴정령, 감시자, 어스름 늑대, 바위 게 | 평균 4.60 · 순방 48.0% · 5레벨
+B | 지옥불 아칼리 | 아칼리, 카밀, 오른, 바루스, 케일, 세주아니, 레오나 | 평균 4.62 · 순방 48.5% · 5레벨 리롤
+B | 요정 트리스타나 | 트리스타나, 시비르, 람머스, 바이, 릴리아, 코부코, 라칸, 자야 | 평균 4.64 · 순방 46.8% · 7레벨
+B | 속사포 케일 | 케일, 오른, 자야, 세주아니, 헤카림, 레오나, 라칸 | 평균 4.66 · 순방 47.4% · 6레벨 리롤
+B | 처형자 이즈리얼 | 말파이트, 이즈리얼, 소라카, 자이라, 아무무, 아지르, 피들스틱, 요릭 | 평균 4.67 · 순방 47.2%
+C | 나무정령 이즈리얼 | 이즈리얼, 헤카림, 소라카, 나르, 피들스틱, 알리스타, 르블랑, 오른, 자야 | 평균 4.76 · 순방 43.9%
+C | 선봉대 헤카림 | 렝가, 헤카림, 어미 부리, 다이애나, 타릭, 아펠리오스, 덩굴정령, 감시자 | 평균 4.78 · 순방 44.6% · 7레벨
+C | 달빛 케일 | 케일, 아펠리오스, 세주아니, 레오나, 알룬, 다이애나, 오른, 라칸 | 평균 4.81 · 순방 44.2% · 6레벨
+C | 원시 니달리 | 니달리, 시비르, 아무무, 릴리아, 감시자, 코그모, 쉔, 라칸 | 평균 4.90 · 순방 42.1%
+C | 약탈자 워윅 | 워윅, 어스름 늑대, 말파이트, 덩굴정령, 아지르, 다이애나, 돌거북, 렉사이 | 평균 4.95 · 순방 42.0% · 6레벨
+C | 주문술사 릴리아 | 아리, 릴리아, 알룬, 다이애나, 피들스틱, 라칸, 요릭, 카르마 | 평균 4.95 · 순방 41.2%
+C | 주문술사 아리 | 아리, 세트, 모르가나, 감시자, 피들스틱, 돌거북, 조약돌, 카르마 | 평균 4.98 · 순방 40.8%
+C | 치명적인 꽃 소라카 | 소라카, 알룬, 케넨, 마오카이, 아이번, 타릭, 아무무, 다이애나, 피들스틱 | 평균 4.98 · 순방 40.3%
+C | 처형자 유나라 | 유나라, 알리스타, 이즈리얼, 세트, 아리, 소라카, 아지르, 르블랑 | 평균 4.98 · 순방 40.9% · 6레벨
+C | 달빛 아펠리오스 | 아펠리오스, 알룬, 마오카이, 다이애나, 타릭, 피들스틱, 케일, 세주아니, 레오나 | 평균 4.99 · 순방 40.5% · 빠른 9레벨
+C | 경쟁자 렝가 | 카직스, 피들스틱, 람머스, 소라카, 감시자, 아지르, 다이애나 | 평균 5.00 · 순방 41.5% · 7레벨
+D | 개화 아리 | 아리, 세트, 애쉬, 나르, 마오카이, 마스터 이, 유나라, 요릭, 카르마 | 빠른 8레벨
+D | 지옥불 아무무 | 아무무, 아펠리오스, 케넨, 마오카이, 다이애나, 쉔, 아칼리, 바루스 | 빠른 8레벨
+D | 치명적인 꽃 아리 | 아리, 말파이트, 소라카, 자이라, 아무무, 아지르, 피들스틱, 요릭 | 빠른 8레벨
+D | 검은 가시 말파이트 | 말파이트, 베이가, 아지르, 렉사이, 소라카, 람머스, 피들스틱, 코부코 | 표준
+D | 선봉대 엘리스 | 엘리스, 케이틀린, 시비르, 감시자, 헤카림, 트리스타나, 바이, 라칸 | 6레벨 리롤
+D | 싸움꾼 세트 | 세트, 이즈리얼, 드레이븐, 나르, 아이번, 케넨, 타릭, 아무무, 알리스타 | 빠른 8레벨
+D | 치명적인 꽃 카직스 | 카직스, 아펠리오스, 피들스틱, 다이애나, 마오카이, 르블랑, 오른, 라칸, 자야 | 빠른 9레벨
+D | 검은 가시 카직스 | 카직스, 아지르, 베이가, 워윅, 바이, 유나라, 요릭, 카르마 | 7레벨
+D | 나무정령 르블랑 | 르블랑, 알리스타, 티모, 감시자, 헤카림, 코그모, 코부코, 베이가 | 8레벨
+D | 요정 트리스타나 엘리스 | 트리스타나, 엘리스, 릴리아, 라칸, 타릭, 감시자, 다이애나, 헤카림 | 7레벨
+D | 속사포 자야 | 자야, 오른, 바루스, 릴리아, 아무무, 헤카림, 트리스타나, 라칸 | 5레벨 리롤
+D | 악의 여단 모르가나 | 모르가나, 카시오페아, 엘리스, 감시자, 다이애나, 헤카림, 케이틀린, 카밀 | 빠른 8레벨` },
+  tftactics: { label:'tftactics.gg', source:'tftactics.gg · 2026-08-31', text:`S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
+S | Spellweaver Defenders | Leona, Ornn, Shen, Cassiopeia, Fiddlesticks, Rammus, Lillia, Soraka
+S | Caustic Adaptors | Yorick, Kogmaw, Krug, Master Yi, Vi, Nidalee, Sett, Gnar
+S | Consuming Flora | Kobuko, RekSai, Veigar, Teemo, Fiddlesticks, Rammus, Sett, Gnar
+S | Elderwood Rapidfire | Ornn, Xayah, Alistar, Leblanc, Aphelios, Lillia, Alune, Gnar
+S | Unrivaled | Leblanc, Diana, Hecarim, Khazix, Rengar, Aphelios, Ezreal, Alune
+A | Juggernaut Hunters | Rakan, Caitlyn, Scuttlecrab, Sejuani, Tristana, Vi, Sivir, Ashe
+A | Blossom Spellweavers | Karma, Yorick, Vi, Ahri, Sett, Sivir, Ashe, Gnar
+A | Coven Invokers | Pebbles, Diana, Hecarim, Kogmaw, Brambleback, Morgana, Sentinel, Taric
+A | Elderwood Spellweavers | Ornn, Yunara, Fiddlesticks, Ahri, Ezreal, Sett, Soraka, Gnar
+A | Invoker Vanguards | Rakan, Diana, Kogmaw, Vi, Morgana, Nidalee, Sentinel, Taric
+A | Lunar Rapidfire | Diana, Hecarim, Mama Beak, Aphelios, Brambleback, Sentinel, Zyra, Taric
+A | Apex Predator | Amumu, Sentinel, Draven, Elder Dragon, Ivern, Kennen, Maokai, Taric
+A | Blackthorn Sprykin | Kobuko, RekSai, Veigar, Fiddlesticks, Rammus, Tristana, Sett, Gnar
+A | Blossom Executioners | Alistar, Leblanc, Yunara, Ahri, Ezreal, Sett, Soraka, Kennen
+A | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
+A | Fae Hunters | Rakan, Xayah, Rammus, Tristana, Vi, Sivir, Lillia, Gnar
+A | Fae Spellweavers | Karma, Rakan, Yorick, Diana, Fiddlesticks, Ahri, Lillia, Alune
+A | Flora Executioners | Fiddlesticks, Amumu, Lillia, Malphite, Soraka, Ivern, Kennen, Maokai
+A | Juggernaut Summoners | Yorick, Azir, Malphite, Soraka, Zyra, Ivern, Kennen, Maokai
+A | Primal Adaptors | Akali, Diana, Kogmaw, Master Yi, Vi, Amumu, Nidalee, Sentinel
+A | Primal Hunters | Shen, Tristana, Vi, Amumu, Lillia, Sivir, Ashe, Kennen
+A | Riftbeast Ravagers | Pebbles, Murkwolf, Krug, Sentinel, Brambleback, Elder Dragon, Taric
+A | Rivals Khazix | Diana, Hecarim, Mama Beak, Khazix, Aphelios, Brambleback, Sentinel, Taric
+A | Rivals Rengar | Diana, Hecarim, Mama Beak, Rengar, Aphelios, Brambleback, Sentinel, Taric
+A | Solar Rapidfire | Leona, Varus, Kayle, Sejuani, Shen, Diana, Aphelios, Alune
+A | Sprykin Hunters | Kobuko, Teemo, Rammus, Tristana, Sentinel, Lillia, Ashe, Gnar
+A | Sprykin Invokers | Kobuko, Teemo, Rammus, Tristana, Sentinel, Lillia, Gnar, Taric
+B | Blackthorn Ravagers | RekSai, Murkwolf, Warwick, Azir, Diana, Krug, Brambleback, Malphite
+B | Coven Spellweavers | Elise, Cassiopeia, Diana, Fiddlesticks, Ahri, Morgana, Sentinel, Taric
+B | Eclipse Rapidfire | Leona, Rakan, Kayle, Sejuani, Diana, Aphelios, Lillia, Alune
+B | Elderwood | Ornn, Xayah, Alistar, Leblanc, Hecarim, Ezreal, Soraka, Gnar
+B | Fae Rapidfire | Ornn, Rakan, Varus, Xayah, Hecarim, Tristana, Amumu, Lillia
+B | Riftbeast Summoners | Yorick, Diana, Krug, Mama Beak, Sentinel, Aphelios, Sett, Zyra
+B | Solar Riftbeasts | Akali, Leona, Gromp, Kayle, Murkwolf, Scuttlecrab, Sejuani, Shen` },
+};
+let META_SRC = 'metatft';   // metatft | tftlabs | tftactics
+let META_SOURCE = META_SOURCES[META_SRC].source;
+const META_TEXT = META_SOURCES.tftactics.text;   // update_meta.bat 호환용 (tftactics 블록 교체 대상)
+const KO_WORDS = {invoker:'기원자',invokers:'기원자',spellweaver:'주문술사',spellweavers:'주문술사',defender:'엄호대',defenders:'엄호대',adaptor:'적응가',adaptors:'적응가',
+  rapidfire:'속사포',juggernaut:'전쟁기계',juggernauts:'전쟁기계',hunter:'사냥꾼',hunters:'사냥꾼',blossom:'개화',coven:'악의 여단',vanguard:'선봉대',vanguards:'선봉대',
+  lunar:'달빛',blackthorn:'검은 가시',sprykin:'날렵이',executioner:'처형자',executioners:'처형자',fae:'요정',primal:'원시',riftbeast:'협곡야수',riftbeasts:'협곡야수',
+  ravager:'약탈자',ravagers:'약탈자',summoner:'소환사',summoners:'소환사',solar:'햇빛',flora:'치명적인 꽃',elderwood:'나무정령',caustic:'부식',eclipse:'일월식',
+  rival:'경쟁자',rivals:'경쟁자',unrivaled:'경쟁자 동시',apex:'최상위',predator:'포식자',consuming:'',khazix:'카직스',rengar:'렝가',brawler:'싸움꾼',brawlers:'싸움꾼',
+  inferno:'지옥불',avatar:'화신'};
+function koDeckName(en){ return en.split(/\s+/).map(w=>{ const k=w.toLowerCase().replace(/[^a-z]/g,''); return KO_WORDS[k]===undefined?w:KO_WORDS[k]; }).filter(Boolean).join(' '); }
+
+// 이름 → 유닛 id (한글, 영문, 별칭)
+const NAME2ID = {};
+const norm = s => s.toLowerCase().replace(/[^a-z0-9가-힣]/g,'');
+for (const id of ORDER){ const u=UNIT[id]; NAME2ID[norm(u.name)]=id; NAME2ID[norm(u.en)]=id; if(ALIAS[id]) NAME2ID[norm(ALIAS[id])]=id; }
+Object.assign(NAME2ID, {mamabeak:'raptor', raptor:'raptor', ancientsentinel:'sentinel', sentinel:'sentinel', elderdragon:'elder', theelderdragon:'elder', elder:'elder',
+  scuttlecrab:'scuttle', scuttle:'scuttle', crab:'scuttle', brambleback:'bramble', murkwolf:'murkwolf', kogmaw:'kogmaw', khazix:'khazix', reksai:'reksai', leblanc:'leblanc', masteryi:'masteryi', yi:'masteryi',
+  cinderling:'cinderling', gromp:'gromp', krug:'krug', pebbles:'pebbles', fiddle:'fiddle', fiddlesticks:'fiddle', 감시자:'sentinel'}, EXTRA_ALIAS);
+
+function parseMeta(text){
+  const decks=[], errors=[];
+  text.split(/\r?\n/).forEach((line,i)=>{
+    line=line.trim(); if(!line||line.startsWith('#')) return;
+    const parts=line.split('|').map(s=>s.trim());
+    if (parts.length<3){ errors.push(`${i+1}행: 구분자 | 가 부족`); return; }
+    const tier=parts[0].toUpperCase().replace(/[^SABCD]/g,'')||'?';
+    const name=parts[1]; const units=[], unknown=[]; const note=(parts[3]||'').trim();
+    for (const raw of parts[2].split(',')){ const s=raw.trim(); if(!s) continue; const id=NAME2ID[norm(s)]; if(id){ if(!units.includes(id)) units.push(id); } else unknown.push(s); }
+    if (unknown.length) errors.push(`${i+1}행 "${name}": 모르는 유닛 ${unknown.join(', ')}`);
+    if (units.length) decks.push({tier,name,ko:koDeckName(name),units,unknown,note});
+  });
+  return {decks,errors};
+}
+const META_BY_SRC = {}; for (const s in META_SOURCES) META_BY_SRC[s]=parseMeta(META_SOURCES[s].text).decks;
+let META = META_BY_SRC[META_SRC];
+let metaTier='all';
+
+function deckCounts(units){
+  const counts=new Uint8Array(NT);
+  for (const id of units){ const u=UNIT[id]; const tr = u.special==='lux' ? ['화신'] : u.special==='kha' ? u.traits : u.traits; for (const t of tr){ const i=TIDX[t]; if(i!==undefined) counts[i]++; } }
+  return counts;
+}
+function deckSynergies(units){
+  const counts=deckCounts(units); const out=[];
+  for (let i=0;i<NT;i++){ const c=counts[i]; if(!c||TRAITS[i].kind==='unique') continue; let tier=0; for(const b of TRAITS[i].bps){ if(c>=b) tier++; else break; } if(tier) out.push({i,c,tier}); }
+  return out.sort((a,b)=>b.c-a.c||b.tier-a.tier);
+}
+function renderMeta(){
+  const q=($('#metaQ').value||'').trim().toLowerCase();
+  $('#metaCount').textContent=META.length; $('#metaSrc').textContent=META_SOURCE;
+  $('#metaList').innerHTML=META.map((d,k)=>{
+    const hay=(d.name+' '+d.ko+' '+d.units.map(id=>UNIT[id].name+' '+UNIT[id].en).join(' ')).toLowerCase();
+    const hide=(metaTier!=='all'&&!(d.tier===metaTier||(metaTier==='C'&&d.tier==='D')))||(q&&!hay.includes(q));
+    const us=d.units.map(id=>UNIT[id]).map(u=>`<span style="--cc:var(--c${u.cost})"><i></i>${u.name}</span>`).join('')+d.unknown.map(n=>`<span class="unk">${n}?</span>`).join('');
+    const syn=deckSynergies(d.units).slice(0,4).map(s=>`<span>${s.c} ${TRAITS[s.i].name}</span>`).join('');
+    const slots=d.units.reduce((a,id)=>a+UNIT[id].slots,0);
+    return `<div class="deck ${hide?'hide':''}" data-k="${k}"><span class="tb ${d.tier}">${d.tier}</span><div><div class="dn">${d.ko}<small>${d.ko!==d.name?d.name+' · ':''}${slots}슬롯${d.note?' · '+d.note:''}</small></div><div class="du">${us}</div><div class="ds">${syn}</div></div><div class="da"><button type="button" data-act="pin" title="이 덱의 유닛을 전부 고정하고 팀을 구성합니다">고정으로 불러오기</button><button type="button" data-act="req" title="이 덱의 주요 시너지를 필수 시너지로 지정합니다">필수 시너지로</button><button type="button" data-act="code" title="인게임 팀 플래너용 코드 복사">팀 코드 복사</button></div></div>`;
+  }).join('');
+}
+function setSize(n){ S.size=n; $('#sizeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.size===n)); }
+function loadDeckAsPins(d){
+  S.pin=new Set(d.units); S.ban=new Set();
+  const has=id=>d.units.includes(id);
+  if (has('lux')){ S.lux=true; setSwitch($('#swLux'),true); }
+  if (has('khazix')){ S.kha=true; setSwitch($('#swKha'),true); }
+  if (has('rengar')){ S.ren=true; setSwitch($('#swRen'),true); }
+  if (has('khazix')&&has('rengar')){ S.rivalBoth=true; setSwitch($('#swRivalBoth'),true); }
+  const slots=d.units.reduce((a,id)=>a+UNIT[id].slots,0);
+  setSize(Math.min(10,Math.max(7,slots)));
+  syncSpecial(); renderPins(); renderRoster();
+  $('#runBtn').click();
+  toast(`${d.ko} — ${d.units.length}유닛 고정, ${S.size}슬롯`);
+}
+function loadDeckAsReq(d){
+  const syn=deckSynergies(d.units).filter(s=>s.c>=3).slice(0,3);
+  if (!syn.length){ toast('3명 이상 모인 시너지가 없어 필수 시너지를 만들지 못했습니다.'); return; }
+  S.req=syn.map(s=>{ const bps=TRAITS[s.i].bps; let need=bps[0]; for(const b of bps) if(s.c>=b) need=b; return {t:s.i,need}; });
+  renderReq(); toast('필수 시너지: '+S.req.map(r=>`${TRAITS[r.t].name} ${r.need}`).join(', '));
+}
+$('#metaList').addEventListener('click',e=>{ const b=e.target.closest('button[data-act]'); if(!b) return; const d=META[+b.closest('.deck').dataset.k]; if(b.dataset.act==='pin') loadDeckAsPins(d); else if(b.dataset.act==='code') copyText(teamCode(d.units),'팀 코드 복사'); else loadDeckAsReq(d); });
+$('#tierSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; metaTier=b.dataset.t; $('#tierSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); renderMeta(); });
+$('#metaQ').addEventListener('input',renderMeta);
+$('#srcSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setMetaSrc(b.dataset.s); });
+function setMetaSrc(s){ META_SRC=s; META=META_BY_SRC[s]; META_SOURCE=META_SOURCES[s].source; $('#srcSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s===s)); renderMeta(); if(!$('#metaUpd').hidden) $('#metaText').value=metaTextCurrent(); }
+$('#metaUpdBtn').addEventListener('click',()=>{ const p=$('#metaUpd'); p.hidden=!p.hidden; if(!p.hidden){ $('#metaText').value=metaTextCurrent(); } });
+function metaTextCurrent(){ return META.map(d=>`${d.tier} | ${d.name} | ${d.units.map(id=>UNIT[id].name).concat(d.unknown).join(', ')}${d.note?' | '+d.note:''}`).join('\n'); }
+$('#metaApply').addEventListener('click',()=>{
+  const {decks,errors}=parseMeta($('#metaText').value);
+  if (!decks.length){ $('#metaMsg').textContent='읽을 수 있는 덱이 없습니다. '+(errors[0]||''); return; }
+  META_BY_SRC[META_SRC]=decks; META=decks; renderMeta(); $('#metaMsg').textContent=`${decks.length}개 덱 적용` + (errors.length?` · 경고 ${errors.length}건: ${errors.slice(0,2).join(' / ')}`:'');
+});
+let toastT=null;
+function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; document.body.appendChild(t); } t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
+
+/* ═══════════════════ 페이지 자체 저장 (claude.ai 아티팩트 데이터 파일) ═══════════════════ */
+const DATA_META={metatft:'data/meta_metatft.txt', tftlabs:'data/meta_tftlabs.txt', tftactics:'data/meta.txt'}, DATA_BIS='data/bis.json';
+async function loadSavedData(){
+  try{
+    for (const s of ['metatft','tftlabs','tftactics']){ try{ const r=await fetch(DATA_META[s],{cache:'no-store'}); if(r.ok){ const t=await r.text(); const p=parseMeta(t); if(p.decks.length){ META_BY_SRC[s]=p.decks; const sm=t.match(/^#\s*source:\s*(.+)$/m); if(sm) META_SOURCES[s].source=sm[1].trim(); } } }catch(e){} }
+    setMetaSrc(META_SRC);
+  }catch(e){}
+  try{
+    const r=await fetch(DATA_BIS,{cache:'no-store'}); if(r.ok){ const j=await r.json(); let n=0; for(const id in j) if(BIS[id]&&Array.isArray(j[id])&&j[id].every(x=>ITEMS[x])){ BIS[id]=j[id].slice(); n++; } if(n) renderRoster(); }
+  }catch(e){}
+  try{
+    const r=await fetch('data/emblems.json',{cache:'no-store'}); if(r.ok){ const j=await r.json(); for(const t in j) if(TIDX[t]!==undefined&&Array.isArray(j[t])) EMBLEM_HOLDERS[t]=j[t].filter(id=>UNIT[id]); renderEmblems(); }
+  }catch(e){}
+}
+let artifactNS=null, HOST=false;
+async function initHost(){
+  try{ const r=await fetch('/__tft/ping',{cache:'no-store'}); if(r.ok && (await r.text()).trim()==='tft-host') HOST=true; }catch(e){}
+  if (!HOST) return;
+  $('#metaSave').hidden=false; $('#bisSave').hidden=false; $('#metaFetch').hidden=false;
+  setInterval(()=>fetch('/__tft/ping',{cache:'no-store'}).catch(()=>{}),15000);   // 창이 닫히면 프로그램이 종료되도록 하는 생존 신호
+}
+$('#metaFetch').addEventListener('click',async()=>{
+  const btn=$('#metaFetch'); btn.disabled=true;
+  const msgs=[];
+  for (const s of ['tftactics','metatft','tftlabs']){
+    $('#metaMsg').textContent=`${META_SOURCES[s].label} 받는 중… ${msgs.length?'('+msgs.join(' · ')+')':''}`;
+    try{
+      const r=await fetch('/__tft/update?src='+s,{method:'POST'}); const j=await r.json();
+      if(!j.ok){ msgs.push(`${META_SOURCES[s].label} 실패(기존 유지)`); continue; }
+      const p=parseMeta(j.text);
+      if (!p.decks.length){ msgs.push(`${META_SOURCES[s].label} 실패(기존 유지)`); continue; }
+      META_BY_SRC[s]=p.decks; if(j.source) META_SOURCES[s].source=j.source;
+      msgs.push(`${META_SOURCES[s].label} ${p.decks.length}개 ✓`);
+    }catch(e){ msgs.push(`${META_SOURCES[s].label} 실패`); }
+  }
+  setMetaSrc(META_SRC); if(!$('#metaUpd').hidden) $('#metaText').value=metaTextCurrent();
+  $('#metaMsg').textContent=msgs.join(' · ')+' — 실패한 출처는 기존 데이터를 그대로 씁니다.';
+  toast('업데이트: '+msgs.join(', '));
+  btn.disabled=false;
+});
+async function initSelfSave(){
+  await initHost();
+  if (HOST) return;
+  if (!window.claude || typeof window.claude.use!=='function') return;
+  try{ artifactNS=await window.claude.use('artifact'); }catch(e){ artifactNS=null; }
+  if (!artifactNS) return;
+  $('#metaSave').hidden=false; $('#bisSave').hidden=false;
+}
+async function saveFiles(files, msgEl){
+  if (HOST){
+    msgEl.textContent='저장 중…';
+    try{ const r=await fetch('/__tft/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(files)}); if(!r.ok) throw new Error(await r.text()); msgEl.textContent='저장됨 — 프로그램 폴더의 data 파일에 보관됩니다.'; toast('저장했습니다'); }
+    catch(err){ msgEl.textContent='저장 실패: '+err.message; }
+    return;
+  }
+  if (!artifactNS) return;
+  msgEl.textContent='저장 중…';
+  try{ await artifactNS.publish(files); msgEl.textContent='저장됨 — 다음에 열 때도 유지됩니다.'; toast('이 페이지에 저장했습니다'); }
+  catch(err){
+    const code=err&&err.code;
+    if (code==='not_writer'||code==='not_granted'||code==='not_declared'){ msgEl.textContent='읽기 전용 화면이라 저장할 수 없습니다.'; $('#metaSave').hidden=true; $('#bisSave').hidden=true; }
+    else if (code==='capability_disabled'||code==='capability_removed'){ msgEl.textContent='이 화면에서는 저장 기능을 쓸 수 없습니다. 내용을 복사해 채팅으로 보내 주세요.'; }
+    else if (code==='conflict'){ msgEl.textContent='다른 곳에서 먼저 저장되어 새 버전으로 다시 불러옵니다.'; }
+    else if (code==='rate_limited'){ msgEl.textContent='저장이 너무 잦습니다. 잠시 후 다시 시도하세요.'; }
+    else msgEl.textContent='저장 실패: '+(err&&err.message||code||'알 수 없는 오류');
+  }
+}
+$('#metaSave').addEventListener('click',()=>{ const {decks}=parseMeta($('#metaText').value); if(!decks.length){ $('#metaMsg').textContent='먼저 덱 목록을 적용하세요.'; return; } META_BY_SRC[META_SRC]=decks; META=decks; renderMeta(); saveFiles({[DATA_META[META_SRC]]:$('#metaText').value}, $('#metaMsg')); });
+$('#bisSave').addEventListener('click',()=>saveFiles({[DATA_BIS]:JSON.stringify(BIS), 'data/emblems.json':JSON.stringify(EMBLEM_HOLDERS)}, $('#bisMsg')));
+
+/* ═══════════════════ 상징 (보유 시 상징 줄 유닛 강제 포함) ═══════════════════ */
+// 상징별 '주기 좋은 유닛' 목록 — lolchess 상징 통계 화면(2026-09-07 스크린샷) 판독. 아이콘 판독이라 일부는 추정(편집 가능).
+const EMBLEM_DEFAULT = {
+  '처형자':['자이라','드레이븐','아리','모르가나','알룬'],
+  '싸움꾼':['다이애나','아지르','감시자','장로 드래곤','아펠리오스'],
+  '치명적인 꽃':['릴리아','카시오페아','자이라','아리','케넨','알룬'],
+  '기원자':['아리','알룬','럭스','아이번','자이라'],
+  '선봉대':['덩굴정령','아펠리오스','장로 드래곤','세트','아무무'],
+  '사냥꾼':['니달리','렝가','어미 부리','아지르','장로 드래곤'],
+  '속사포':['덩굴정령','이즈리얼','자이라','드레이븐','나르'],
+  '나무정령':['모르가나','소라카','다이애나','타릭','케넨'],
+  '요정':['렝가','시비르','엘리스','모르가나','애쉬'],
+  '엄호대':['렝가','아무무','아펠리오스','감시자','케넨'],
+  '전쟁기계':['아펠리오스','감시자','세트','타릭','소라카'],
+  '주문술사':['시비르','세트','자이라','케넨','럭스'],
+  '달빛':['자이라','덩굴정령','세트','이즈리얼','어미 부리'],
+  '지옥불':['자이라','피들스틱','이즈리얼','드레이븐','애쉬'],
+  '날렵이':['렝가','카직스','헤카림','소라카','아펠리오스'],
+  '개화':['시비르','나르','세트','자이라','아지르'],
+  '원시':['어미 부리','애쉬','릴리아','나르','렝가'],
+  '약탈자':['렝가','니달리','모르가나','나르','장로 드래곤'],
+  '검은 가시':['아무무','카직스','케넨','감시자'],
+  '악의 여단':['다이애나','감시자','카직스','장로 드래곤','아이번'],
+};
+const EMBLEM_HOLDERS = {};   // 특성명 → 유닛 id 배열 (편집 가능)
+function resetEmblemHolders(){
+  for (const t in EMBLEM_DEFAULT){ EMBLEM_HOLDERS[t]=[]; for (const n of EMBLEM_DEFAULT[t]){ const id=NAME2ID[norm(n)]; const ti=TIDX[t]; if(id && !EMBLEM_HOLDERS[t].includes(id) && !UNIT[id].traits.includes(t)) EMBLEM_HOLDERS[t].push(id); } }
+}
+resetEmblemHolders();
+const embTrait=$('#embTrait');
+embTrait.innerHTML=TRAITS.map((t,i)=>t.kind==='unique'?'':`<option value="${i}">${t.name} 상징</option>`).join('');
+// 같은 상징을 여러 개 가질 수 있음 (예: 처형자 1개 + 주문술사 2개). S.emblems 는 상징 1개당 항목 1개 — 같은 특성 상징은 서로 다른 유닛에게 감.
+const EMB_MAX = 10;
+function embCount(t){ return S.emblems.filter(e=>e.t===t).length; }
+function embSet(t, n){
+  n=Math.max(0,Math.min(EMB_MAX,n));
+  S.emblems=S.emblems.filter(e=>e.t!==t);
+  for (let i=0;i<n;i++) S.emblems.push({t});
+  renderEmblems();
+}
+$('#embAdd').addEventListener('click',()=>{ const t=+embTrait.value; const n=Math.max(1,Math.min(EMB_MAX,+$('#embN').value||1)); embSet(t, embCount(t)+n); $('#embN').value=1; });
+$('#embList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-t]'); if(!b) return; const t=+b.dataset.t, act=b.dataset.act;
+  if (act==='x') embSet(t,0); else if (act==='plus') embSet(t,embCount(t)+1); else if (act==='minus') embSet(t,embCount(t)-1);
+});
+$('#swEmbRec').addEventListener('click',()=>{ S.embRecommended=!S.embRecommended; setSwitch($('#swEmbRec'),S.embRecommended); renderEmblems(); });
+function embGroups(){ const seen=[]; for (const e of S.emblems) if(!seen.includes(e.t)) seen.push(e.t); return seen.map(t=>({t, n:embCount(t)})); }
+function renderEmblems(){
+  const el=$('#embList');
+  const groups=embGroups();
+  el.innerHTML = groups.length ? groups.map(g=>`<span class="chip emb">${TRAITS[g.t].name} 상징<span class="cnt" title="개수">×${g.n}</span><button type="button" class="pm" data-t="${g.t}" data-act="minus" aria-label="하나 빼기">−</button><button type="button" class="pm" data-t="${g.t}" data-act="plus" aria-label="하나 더">+</button><button type="button" class="x" data-t="${g.t}" data-act="x" aria-label="삭제">×</button></span>`).join('')
+    : '<span class="hint" style="margin:0">보유한 상징이 없습니다.</span>';
+  if (groups.length){
+    const total=S.emblems.length, maxHold=groups.reduce((a,g)=>Math.max(a,g.n),0);
+    const warn=[]; if (total>S.size) warn.push(`상징 ${total}개는 팀 크기 ${S.size}를 넘습니다(유닛 1명당 상징 1개).`);
+    for (const g of groups){ const hs=(EMBLEM_HOLDERS[TRAITS[g.t].name]||[]).length; if (S.embRecommended && g.n>hs) warn.push(`${TRAITS[g.t].name} 상징 ${g.n}개인데 추천 유닛은 ${hs}명뿐입니다 — 추천 목록에 유닛을 더하거나 "추천 유닛에게만"을 끄세요.`); }
+    if (warn.length) el.insertAdjacentHTML('beforeend',`<span class="hint warn" style="margin:0;width:100%">${warn.join('<br>')}</span>`);
+  }
+  const ed=$('#embEdit'); ed.hidden=!groups.length;
+  if (groups.length){
+    $('#embHolders').innerHTML=groups.map(e=>{ const tn=TRAITS[e.t].name; const hs=EMBLEM_HOLDERS[tn]||(EMBLEM_HOLDERS[tn]=[]);
+      const opts=ORDER.filter(id=>!UNIT[id].traits.includes(tn)&&!hs.includes(id)).map(id=>`<option value="${id}">${UNIT[id].name}</option>`).join('');
+      return `<div class="holders" data-t="${tn}"><span class="hl">${tn} 상징 추천 유닛${hs.length?'':' — 비어 있음(추천 모드면 팀을 못 만듭니다)'}</span>${hs.map(id=>`<span class="chip"><span class="dot k${UNIT[id].cost}"></span>${UNIT[id].name}<button type="button" class="x" data-h="${id}" aria-label="제거">×</button></span>`).join('')}<select class="sm" aria-label="추천 유닛 추가"><option value="">+ 유닛 추가</option>${opts}</select></div>`; }).join('');
+  }
+}
+$('#embHolders').addEventListener('click',e=>{ const b=e.target.closest('.x'); if(!b) return; const tn=b.closest('.holders').dataset.t; EMBLEM_HOLDERS[tn]=EMBLEM_HOLDERS[tn].filter(id=>id!==b.dataset.h); renderEmblems(); });
+$('#embHolders').addEventListener('change',e=>{ const sel=e.target.closest('select'); if(!sel||!sel.value) return; const tn=sel.closest('.holders').dataset.t; EMBLEM_HOLDERS[tn].push(sel.value); renderEmblems(); });
+
+/* init */
+$('#meta').textContent=`유닛 ${UNITS.length} · 특성 ${NT}`;
+renderRoster(); renderPins(); renderReq(); renderEmblems(); syncSpecial(); renderMeta(); loadSavedData(); initSelfSave();
+</script>
+</body>
+</html>
