@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-09-13
+# source: tftactics.gg · 2026-09-14
 S | Blossom Spellweavers | Karma, Yorick, Vi, Ahri, Sett, Sivir, Ashe, Gnar
 S | Consuming Flora | Kobuko, Reksai, Veigar, Teemo, Fiddlesticks, Rammus, Sett, Gnar
 S | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
