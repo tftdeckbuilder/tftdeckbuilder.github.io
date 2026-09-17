@@ -1,15 +1,16 @@
-# source: tftactics.gg · 2026-09-16
-S | Blossom Spellweavers | Karma, Yorick, Vi, Ahri, Sett, Sivir, Ashe, Gnar
-S | Consuming Flora | Kobuko, Reksai, Veigar, Teemo, Fiddlesticks, Rammus, Sett, Gnar
+# source: tftactics.gg · 2026-09-17
+S | Consuming Flora | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
 S | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
 S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
 S | Lunar Rapidfire | Varus, Diana, Kogmaw, Vi, Amumu, Aphelios, Nidalee, Sentinel
 S | Primal Hunters | Shen, Tristana, Vi, Amumu, Lillia, Sivir, Ashe, Kennen
+S | Rivals Khazix | Ornn, Diana, Hecarim, Fiddlesticks, Khazix, Aphelios, Ezreal, Soraka
 A | Apex Predator | Pebbles, Murkwolf, Krug, Brambleback, Sentinel, Elder_dragon, Gnar, Taric
+A | Blossom Spellweavers | Karma, Yorick, Vi, Ahri, Sett, Sivir, Ashe, Gnar
 A | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Vi, Nidalee, Sett, Gnar
 A | Flora Executioners | Yorick, Azir, Fiddlesticks, Amumu, Malphite, Soraka, Zyra, Kennen
 A | Unrivaled | Leblanc, Diana, Hecarim, Khazix, Rengar, Aphelios, Ezreal, Alune
-A | Blackthorn Sprykin | Kobuko, Reksai, Veigar, Fiddlesticks, Rammus, Tristana, Sett, Gnar
+A | Blackthorn Sprykin | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
 A | Blossom Executioners | Alistar, Leblanc, Yunara, Ahri, Ezreal, Sett, Soraka, Kennen
 A | Coven Invokers | Pebbles, Diana, Hecarim, Kogmaw, Brambleback, Morgana, Sentinel, Taric
 A | Elderwood Rapidfire | Ornn, Xayah, Alistar, Leblanc, Aphelios, Lillia, Alune, Gnar
@@ -22,7 +23,6 @@ A | Juggernaut Summoners | Yorick, Azir, Fiddlesticks, Amumu, Malphite, Soraka, 
 A | Primal Adaptors | Akali, Diana, Kogmaw, Master_yi, Vi, Amumu, Nidalee, Sentinel
 A | Riftbeast Ravagers | Pebbles, Murkwolf, Krug, Sentinel, Brambleback, Elder_dragon, Taric
 A | Riftbeasts Reroll | Cinderling, Krug, Pebbles, Murkwolf, Scuttlecrab, Brambleback, Sentinel, Gnar
-A | Rivals Khazix | Diana, Hecarim, Mama_beak, Khazix, Aphelios, Brambleback, Sentinel, Taric
 A | Rivals Rengar | Diana, Hecarim, Mama_beak, Rengar, Aphelios, Brambleback, Sentinel, Taric
 A | Solar Rapidfire | Leona, Varus, Kayle, Sejuani, Shen, Diana, Aphelios, Alune
 A | Spellweaver Defenders | Leona, Ornn, Shen, Cassiopeia, Fiddlesticks, Rammus, Lillia, Soraka
