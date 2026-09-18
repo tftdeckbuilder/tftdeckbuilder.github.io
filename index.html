@@ -1,59 +1,55 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="public">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>세트 18 덱 빌더</title>
+<title>TFT Deck Builder Zac</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+/* ── Zac: 단일 다크 테마 (TFT 사이트 계열의 어두운 바탕 + 잭 슬라임 그린 강조) ── */
 :root{
-  --bg:#F2F5EE; --panel:#FFFFFF; --panel2:#E8EEE3; --ink:#1B2420; --muted:#5F6D64; --line:#D3DBD0;
-  --accent:#2F6F4E; --accent-ink:#FFFFFF; --accent-soft:#DCEBE1; --gold:#B8892C; --gold-soft:#F6EDD6;
-  --c1:#76857C; --c2:#3E8E5B; --c3:#2F6FB3; --c4:#8A4FBF; --c5:#C99A2E;
-  --pin:#2F6F4E; --ban:#B04A3A; --ban-soft:#F5E1DD;
-  --shadow:0 1px 2px rgba(20,40,30,.06), 0 4px 14px rgba(20,40,30,.05);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#121915; --panel:#1A2420; --panel2:#223029; --ink:#E5ECE4; --muted:#94A398; --line:#2E3D34;
-    --accent:#6CC392; --accent-ink:#0F1A14; --accent-soft:#1F3A2C; --gold:#E2B85A; --gold-soft:#3A2F17;
-    --c1:#8F9C94; --c2:#5BC27C; --c3:#5D9EE6; --c4:#B07FE0; --c5:#F0BE4E;
-    --pin:#6CC392; --ban:#E27A68; --ban-soft:#3D2420;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#121915; --panel:#1A2420; --panel2:#223029; --ink:#E5ECE4; --muted:#94A398; --line:#2E3D34;
-  --accent:#6CC392; --accent-ink:#0F1A14; --accent-soft:#1F3A2C; --gold:#E2B85A; --gold-soft:#3A2F17;
-  --c1:#8F9C94; --c2:#5BC27C; --c3:#5D9EE6; --c4:#B07FE0; --c5:#F0BE4E;
-  --pin:#6CC392; --ban:#E27A68; --ban-soft:#3D2420;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  --bg:#0C0E15; --panel:#141826; --panel2:#1B2031; --panel3:#232A3D; --ink:#ECEFF7; --muted:#8B93AB; --line:#272D40; --line2:#39415A;
+  --accent:#8CF04F; --accent-2:#5CD22A; --accent-ink:#0A1705; --accent-soft:rgba(140,240,79,.13); --accent-line:rgba(140,240,79,.5); --accent-glow:0 0 0 1px rgba(140,240,79,.35), 0 6px 22px rgba(140,240,79,.22);
+  --violet:#8F62F6; --violet-soft:rgba(143,98,246,.16);
+  --gold:#E9BB52; --gold-soft:rgba(233,187,82,.14);
+  --c1:#8E97AA; --c2:#3FC46F; --c3:#3E8EF7; --c4:#B45DFF; --c5:#F5B83E;
+  --pin:#8CF04F; --ban:#F4705F; --ban-soft:rgba(244,112,95,.14);
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 28px rgba(0,0,0,.35);
+  --disp:"Rajdhani","Noto Sans KR",sans-serif; --mono:"IBM Plex Mono","D2Coding",Consolas,monospace;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
-.mono{font-family:"IBM Plex Mono","D2Coding",Consolas,monospace;font-variant-numeric:tabular-nums}
-button,input,select{font:inherit;color:inherit}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg) radial-gradient(900px 420px at 8% -10%, rgba(140,240,79,.10), transparent 60%) no-repeat, var(--bg) radial-gradient(900px 480px at 92% -20%, rgba(143,98,246,.16), transparent 60%) no-repeat;background-color:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select.sm,input.num,input[type=search],input[type=text],textarea{color-scheme:dark}
+::selection{background:rgba(140,240,79,.35)}
 
 /* ── header ── */
-.top{display:flex;align-items:baseline;gap:16px;padding:18px 24px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
-.top h1{margin:0;font-family:"Noto Serif KR","Noto Sans KR",serif;font-weight:600;font-size:22px;letter-spacing:-.01em}
-.top .sub{color:var(--muted);font-size:13px}
-.top .sub b{color:var(--gold);font-weight:500}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:flex;align-items:center;gap:14px;padding:10px 24px;border-bottom:1px solid var(--line);background:rgba(12,14,21,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.top .logo{width:46px;height:46px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--accent-line), 0 0 24px rgba(140,240,79,.35);background:var(--panel2)}
+.top h1{margin:0;display:flex;align-items:baseline;gap:8px;font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:.06em;line-height:1;text-transform:uppercase;white-space:nowrap}
+.top h1 .zac{color:var(--accent);text-shadow:0 0 18px rgba(140,240,79,.45)}
+.top .sub{color:var(--muted);font-size:12.5px}
+.top .sub b{color:var(--ink);font-weight:500}
+.top .set{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.14em;color:var(--violet);border:1px solid var(--violet);border-radius:4px;padding:1px 7px;margin-right:2px;vertical-align:2px;background:var(--violet-soft)}
 .top .spacer{flex:1}
-.top .meta{color:var(--muted);font-size:12px;letter-spacing:.04em}
+.top .meta{color:var(--muted);font-size:12px;letter-spacing:.06em;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--panel)}
 
 /* ── layout ── */
-.app{display:grid;grid-template-columns:292px minmax(0,1fr) 400px;gap:18px;padding:18px 24px 48px;max-width:1600px;margin:0 auto}
-@media (min-width:1181px){.settings,.results{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow-y:auto}}
+.app{display:grid;grid-template-columns:296px minmax(0,1fr) 404px;gap:16px;padding:16px 24px 48px;max-width:1640px;margin:0 auto}
+@media (min-width:1181px){.settings,.results{position:sticky;top:calc(env(safe-area-inset-top,0px) + 82px);align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}}
 @media (max-width:1180px){.app{grid-template-columns:280px minmax(0,1fr)}.results{grid-column:1 / -1}}
-@media (max-width:760px){.app{grid-template-columns:1fr;padding:14px}.results{grid-column:auto}.top{flex-wrap:wrap;gap:4px 12px}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+@media (max-width:760px){.app{grid-template-columns:1fr;padding:14px 16px}.results{grid-column:auto}.top{flex-wrap:wrap;gap:6px 12px;padding:10px 16px}.top .sub{width:100%}.top .meta{display:none}.top h1{font-size:20px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
 .sec{padding:14px 16px;border-bottom:1px solid var(--line)}
 .sec:last-child{border-bottom:0}
-.sec h2{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.sec h2{margin:0 0 10px;font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.sec h2::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--accent);box-shadow:0 0 8px rgba(140,240,79,.6)}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:30px}
 .row + .row{margin-top:4px}
 .row label{display:flex;align-items:center;gap:8px}
@@ -61,51 +57,60 @@ button{cursor:pointer}
 .hint.warn{color:var(--ban)}
 
 /* segmented */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--panel2)}
-.seg button{border:0;background:transparent;padding:6px 12px;color:var(--muted);font-weight:500}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--panel2)}
+.seg button{border:0;background:transparent;padding:6px 12px;color:var(--muted);font-weight:500;transition:background .12s,color .12s}
+.seg button:hover{color:var(--ink);background:var(--panel3)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .seg button + button{border-left:1px solid var(--line)}
-.seg.wide{display:flex;width:100%}
-.seg.wide button{flex:1;padding:6px 4px;white-space:nowrap;font-size:13px}
+.seg.wide{display:flex;flex-wrap:wrap;width:100%}
+.seg.wide button{flex:1 1 auto;padding:6px 6px;white-space:nowrap;font-size:13px}
+.seg.sz button{padding:6px 7px;font-size:13px;font-family:var(--mono)}
 
 /* switch */
-.sw{position:relative;width:36px;height:20px;border-radius:20px;background:var(--line);border:0;padding:0;flex:none;transition:background .15s}
-.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.sw{position:relative;width:38px;height:22px;border-radius:22px;background:var(--line2);border:0;padding:0;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.4);transition:transform .15s}
 .sw[aria-checked="true"]{background:var(--accent)}
-.sw[aria-checked="true"]::after{transform:translateX(16px)}
+.sw[aria-checked="true"]::after{transform:translateX(16px);background:var(--accent-ink)}
 .sw:disabled{opacity:.45;cursor:not-allowed}
-select.sm,input.num{border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:4px 6px;font-size:13px}
-input.num{width:64px;text-align:right}
+select.sm,input.num{border:1px solid var(--line2);background:var(--panel2);border-radius:6px;padding:4px 6px;font-size:13px}
+select.sm:focus,input.num:focus{border-color:var(--accent);outline:0}
+input.num{width:64px;text-align:right;font-family:var(--mono)}
 .wgrid{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-size:13px}
 .wgrid .k{color:var(--muted)}
 .costw{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.costw label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);align-items:stretch}
-.costw input.num{width:100%;text-align:center}
+.costw label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);align-items:stretch;font-weight:500}
+.costw label:nth-child(1){color:var(--c1)}.costw label:nth-child(2){color:var(--c2)}.costw label:nth-child(3){color:var(--c3)}.costw label:nth-child(4){color:var(--c4)}.costw label:nth-child(5){color:var(--c5)}
+.costw input.num{width:100%;text-align:center;color:var(--ink)}
 details.adv summary{cursor:pointer;color:var(--muted);font-size:12px;margin-top:8px}
+details.adv summary:hover{color:var(--ink)}
 details.adv .wgrid{margin-top:8px}
 .wgrid.tw{grid-template-columns:1fr auto 1fr auto;column-gap:8px}
 .wgrid.tw input.num{width:52px}
-.q{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line);font-size:10px;color:var(--muted);cursor:help;margin-left:2px;vertical-align:1px}
+.q{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid var(--line2);font-size:10px;color:var(--muted);cursor:help;margin-left:2px;vertical-align:1px}
 .reqadd{display:grid;grid-template-columns:1fr auto auto;gap:6px}
-.mini{border:1px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:5px;padding:4px 10px;font-size:13px;font-weight:500}
+.mini{border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:13px;font-weight:600;transition:background .12s}
+.mini:hover{background:rgba(140,240,79,.22)}
+.mini:disabled{opacity:.5;cursor:wait}
 .chip.req{border-color:var(--gold);background:var(--gold-soft)}
-.chip.req .n{font-family:"IBM Plex Mono",monospace;font-weight:500}
+.chip.req .n{font-family:var(--mono);font-weight:500;color:var(--gold)}
 .tt.req{box-shadow:0 0 0 2px var(--gold) inset}
 .tu.lone{border-style:dashed;opacity:.75}
 .tu.emb{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
-.tu .embtag{background:var(--gold);color:#1B2420;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:2px;letter-spacing:.02em}
+.tu .embtag{background:var(--gold);color:#1B1607;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:2px;letter-spacing:.02em}
 .chip.emb{border-color:var(--gold);background:var(--gold-soft)}
-.chip.emb .cnt{font-family:"IBM Plex Mono",monospace;font-weight:500;margin-left:2px}
-.chip.emb .pm{border:1px solid var(--line);background:var(--panel);border-radius:4px;width:18px;height:18px;line-height:1;padding:0;font-size:13px;color:var(--ink)}
+.chip.emb .cnt{font-family:var(--mono);font-weight:500;margin-left:2px}
+.chip.emb .pm{border:1px solid var(--line2);background:var(--panel);border-radius:4px;width:18px;height:18px;line-height:1;padding:0;font-size:13px;color:var(--ink)}
 .chip.emb .pm:hover{border-color:var(--gold)}
 .holders{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0 8px}
 .holders .hl{font-size:12px;color:var(--muted);width:100%}
-.holders select{border:1px solid var(--line);border-radius:5px;background:var(--panel);font-size:12px;padding:2px 4px}
+.holders select{border:1px solid var(--line2);border-radius:5px;background:var(--panel2);font-size:12px;padding:2px 4px}
 
-.run{width:100%;border:0;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;padding:12px;letter-spacing:.02em}
-.run:disabled{opacity:.6;cursor:wait}
+.run{width:100%;border:0;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.12em;text-transform:uppercase;padding:12px;box-shadow:var(--accent-glow);transition:transform .1s,filter .12s}
+.run:hover{filter:brightness(1.06)}
+.run:active{transform:translateY(1px)}
+.run:disabled{opacity:.6;cursor:wait;box-shadow:none}
 .pins{display:flex;flex-wrap:wrap;gap:6px;min-height:24px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 6px;border-radius:5px;font-size:12px;border:1px solid var(--line);background:var(--panel2)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 6px;border-radius:6px;font-size:12px;border:1px solid var(--line2);background:var(--panel2)}
 .chip.pin{border-color:var(--pin);background:var(--accent-soft)}
 .chip.ban{border-color:var(--ban);background:var(--ban-soft)}
 .chip .x{border:0;background:transparent;padding:0;color:var(--muted);line-height:1;font-size:14px}
@@ -115,18 +120,20 @@ details.adv .wgrid{margin-top:8px}
 
 /* ── roster ── */
 .roster .tools{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.roster .tools input[type=search]{flex:1;min-width:160px;border:1px solid var(--line);border-radius:6px;padding:7px 10px;background:var(--panel)}
+.roster .tools input[type=search]{flex:1;min-width:160px;border:1px solid var(--line2);border-radius:8px;padding:8px 12px;background:var(--panel2)}
+.roster .tools input[type=search]:focus{border-color:var(--accent);outline:0}
 .legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
-.legend i{width:12px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block}
+.legend i{width:12px;height:12px;border-radius:3px;border:1px solid var(--line2);display:inline-block}
 .legend i.p{background:var(--accent-soft);border-color:var(--pin)}
 .legend i.b{background:var(--ban-soft);border-color:var(--ban)}
 .tier{padding:12px 16px 14px;border-bottom:1px solid var(--line)}
 .tier:last-child{border-bottom:0}
-.tier h3{margin:0 0 8px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--muted)}
-.tier h3 .n{font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--ink)}
+.tier h3{margin:0 0 8px;font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;gap:8px;color:var(--ink)}
+.tier h3 .dot{width:9px;height:9px}
+.tier h3 .n{font-family:var(--mono);font-weight:500;font-size:12px;color:var(--muted)}
 .units{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.u{position:relative;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 8px 6px 12px;line-height:1.35;transition:border-color .1s,background .1s;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.u{position:relative;text-align:left;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:7px 8px 6px 13px;line-height:1.35;transition:border-color .12s,background .12s,box-shadow .12s;display:flex;flex-direction:column;gap:5px;cursor:pointer}
 .u .ubtn{all:unset;display:block;cursor:pointer;text-align:left}
 .u .ubtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 .items{display:flex;gap:4px}
@@ -135,109 +142,135 @@ details.adv .wgrid{margin-top:8px}
 .it{display:block;border-radius:4px;image-rendering:auto}
 .bisbar{display:flex;align-items:center;gap:10px;width:100%;flex-wrap:wrap}
 .link{border:0;background:transparent;padding:0;color:var(--accent);font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.link:hover{filter:brightness(1.15)}
 .tuitems{display:inline-flex;gap:2px;margin-left:3px}
 .metabox{border-bottom:1px solid var(--line)}
 .metabox summary{cursor:pointer;padding:11px 16px;display:flex;align-items:center;gap:10px;list-style:none}
+.metabox summary:hover{background:var(--panel2)}
 .metabox summary::-webkit-details-marker{display:none}
-.metabox summary::before{content:"▸";color:var(--muted);font-size:12px}
+.metabox summary::before{content:"▸";color:var(--accent);font-size:12px}
 .metabox[open] summary::before{content:"▾"}
-.metabox summary .ttl{font-weight:700;font-size:13px}
+.metabox summary .ttl{font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.08em}
 .metabox summary .n{color:var(--muted);font-size:12px}
 .metabox summary .src{margin-left:auto;color:var(--muted);font-size:11.5px}
 .metatools{display:flex;gap:8px;align-items:center;padding:0 16px 10px;flex-wrap:wrap}
-.metatools input[type=search]{flex:1;min-width:140px;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--panel);font-size:13px}
+.metatools input[type=search]{flex:1;min-width:140px;border:1px solid var(--line2);border-radius:8px;padding:6px 10px;background:var(--panel2);font-size:13px}
 .metatools .seg button{padding:5px 10px;font-size:12.5px}
 #srcSeg button{font-size:12px;padding:5px 8px}
+.besttools{font-size:12.5px;row-gap:6px}
+.besttools label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.besttools progress{accent-color:var(--accent);height:8px}
+.deck .tb.score{width:auto;padding:0 6px;font-family:var(--mono);background:var(--accent);color:var(--accent-ink)}
 .upd{padding:0 16px 12px}
-.upd textarea{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:8px;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5;resize:vertical}
+.upd textarea{width:100%;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);padding:8px;font-family:var(--mono);font-size:12px;line-height:1.5;resize:vertical}
 .updbtns{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
 .deck{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;padding:9px 16px;border-top:1px solid var(--line);align-items:start}
+.deck:hover{background:rgba(255,255,255,.015)}
 .deck.hide{display:none}
-.deck .tb{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;background:var(--c1);margin-top:1px}
-.deck .tb.S{background:#C0392B}.deck .tb.A{background:#B8892C}.deck .tb.B{background:#2F6FB3}.deck .tb.C{background:#76857C}
+.deck .tb{width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:14px;color:#fff;background:var(--c1);margin-top:1px}
+.deck .tb.S{background:linear-gradient(180deg,#FF7A45,#E0452E)}.deck .tb.A{background:linear-gradient(180deg,#F5C451,#D2962A);color:#1B1607}.deck .tb.B{background:linear-gradient(180deg,#5A9CFF,#2F6FD6)}.deck .tb.C{background:linear-gradient(180deg,#8E97AA,#6B7385)}.deck .tb.D{background:#4E5566}
 .deck .dn{font-weight:600;font-size:13px}
 .deck .dn small{color:var(--muted);font-weight:400;margin-left:6px;font-size:11px}
 .deck .du{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
-.deck .du span{font-size:11.5px;padding:1px 6px 1px 4px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:4px}
-.deck .du span i{width:6px;height:6px;border-radius:50%;background:var(--cc);display:inline-block}
+.deck .du span{font-size:11.5px;padding:1px 6px 1px 4px;border-radius:4px;background:var(--panel2);border:1px solid var(--line2);display:inline-flex;align-items:center;gap:4px}
+.deck .du span i{width:6px;height:6px;border-radius:50%;background:var(--cc);display:inline-block;box-shadow:0 0 5px var(--cc)}
 .deck .du span.unk{border-style:dashed;color:var(--ban)}
 .deck .ds{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
-.deck .ds span{font-size:11px;color:var(--muted);padding:0 5px;border-radius:3px;background:var(--gold-soft)}
+.deck .ds span{font-size:11px;color:var(--gold);padding:0 5px;border-radius:3px;background:var(--gold-soft)}
 .deck .da{display:flex;flex-direction:column;gap:4px}
-.deck .da button{border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:3px 9px;font-size:12px;white-space:nowrap}
-.deck .da button:hover{border-color:var(--accent);background:var(--accent-soft)}
-.codebtn{margin-left:8px;border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:2px 8px;font-size:11.5px;white-space:nowrap}
-.codebtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.deck .da button{border:1px solid var(--line2);background:var(--panel2);border-radius:6px;padding:3px 9px;font-size:12px;white-space:nowrap}
+.deck .da button:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.codebtn{margin-left:8px;border:1px solid var(--line2);background:var(--panel2);border-radius:6px;padding:2px 8px;font-size:11.5px;white-space:nowrap}
+.codebtn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .codein{display:flex;gap:6px;width:100%}
-.codein input{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--panel);font-family:"IBM Plex Mono",monospace;font-size:12px}
-.codebox{position:fixed;left:50%;top:40%;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 36px rgba(0,0,0,.3);padding:12px;z-index:70}
+.codein input{flex:1;border:1px solid var(--line2);border-radius:8px;padding:6px 10px;background:var(--panel2);font-family:var(--mono);font-size:12px}
+.codebox{position:fixed;left:50%;top:40%;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 36px rgba(0,0,0,.5);padding:12px;z-index:70}
 .codebox .ph{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
 .codebox .ph .x{margin-left:auto;border:0;background:transparent;font-size:16px;color:var(--muted)}
-.codebox input{width:100%;border:1px solid var(--accent);border-radius:6px;padding:8px 10px;font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--panel2)}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.codebox input{width:100%;border:1px solid var(--accent);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:13px;background:var(--panel2)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;z-index:60;box-shadow:0 6px 24px rgba(140,240,79,.35)}
 .tuitems span{line-height:0}
-.picker{position:fixed;z-index:50;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:10px}
+.picker{position:fixed;z-index:50;background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);padding:10px}
 .picker .ph{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:8px}
 .picker .ph .x{margin-left:auto;border:0;background:transparent;font-size:16px;color:var(--muted);padding:0 4px}
 .picker .pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:3px;max-height:50vh;overflow:auto}
-.pi{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 5px;font-size:11.5px;text-align:left;white-space:nowrap}
+.pi{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 5px;font-size:11.5px;text-align:left;white-space:nowrap}
 .pi:hover{background:var(--panel2)}
 .pi.cur{border-color:var(--accent);background:var(--accent-soft)}
-.u::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:6px 0 0 6px;background:var(--cc)}
-.u:hover{border-color:var(--accent)}
-.u .nm{font-weight:500;font-size:13px;display:flex;justify-content:space-between;gap:6px}
+.u::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:8px 0 0 8px;background:var(--cc);box-shadow:0 0 10px var(--cc)}
+.u:hover{border-color:var(--cc);box-shadow:0 0 0 1px var(--cc) inset}
+.u .nm{font-weight:600;font-size:13px;display:flex;justify-content:space-between;gap:6px}
 .u.ban .items{opacity:.5}
 .u .nm .tag{font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap}
 .u .tr{font-size:11px;color:var(--muted);margin-top:2px}
-.u.pin{background:var(--accent-soft);border-color:var(--pin)}
+.u.pin{background:var(--accent-soft);border-color:var(--pin);box-shadow:0 0 0 1px var(--pin) inset,0 0 14px rgba(140,240,79,.18)}
 .u.ban{background:var(--ban-soft);border-color:var(--ban)}
 .u.ban .nm,.u.ban .tr{text-decoration:line-through;opacity:.7}
-.u.off{opacity:.45}
+.u.off{opacity:.4}
 .u.off:hover{opacity:.8}
 .u.hide{display:none}
 
 /* ── results ── */
 .results .head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
-.results .head h2{margin:0;font-size:14px}
+.results .head h2{margin:0;font-family:var(--disp);font-size:17px;letter-spacing:.1em;text-transform:uppercase}
 .results .head .st{color:var(--muted);font-size:12px}
 .empty{padding:28px 16px;color:var(--muted);text-align:center;font-size:13px;line-height:1.7}
+.empty .mascot{width:132px;height:132px;border-radius:50%;display:block;margin:4px auto 12px;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent-line),0 0 40px rgba(140,240,79,.28)}
+.empty .say{font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:.06em;color:var(--ink);margin-bottom:4px}
 .team{padding:14px 16px;border-bottom:1px solid var(--line)}
 .team:last-child{border-bottom:0}
+.team:first-child{background:linear-gradient(180deg,rgba(140,240,79,.06),transparent 70%)}
 .team .th{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
-.team .rank{font-family:"Noto Serif KR",serif;font-weight:600;font-size:18px;color:var(--gold);min-width:22px}
-.team .score{font-family:"IBM Plex Mono",monospace;font-size:18px;font-weight:500}
-.team .score small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px}
+.team .rank{font-family:var(--disp);font-weight:700;font-size:22px;color:var(--gold);min-width:22px;line-height:1}
+.team .rank::before{content:"#";font-size:13px;opacity:.7}
+.team .score{font-family:var(--disp);font-size:24px;font-weight:700;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
+.team .score small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px;font-family:"Noto Sans KR",sans-serif}
 .team .costsum{margin-left:auto;font-size:12px;color:var(--muted)}
-.team .costsum b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:500}
+.team .costsum b{font-family:var(--mono);color:var(--ink);font-weight:500}
 .tunits{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-.tu{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);font-size:12.5px;font-weight:500}
-.tu.pinned{border-color:var(--pin)}
-.tu .cbox{width:14px;height:14px;border-radius:3px;background:var(--cc);color:#fff;font-size:9px;font-family:"IBM Plex Mono",monospace;display:inline-flex;align-items:center;justify-content:center;font-weight:500}
+.tu{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--cc);font-size:12.5px;font-weight:500}
+.tu.pinned{border-color:var(--pin);border-left-color:var(--cc);background:var(--accent-soft)}
+.tu .cbox{width:15px;height:15px;border-radius:3px;background:var(--cc);color:#0B0D14;font-size:9.5px;font-family:var(--mono);display:inline-flex;align-items:center;justify-content:center;font-weight:700}
 .tu .sub{color:var(--muted);font-weight:400;font-size:11px}
 .traits{display:flex;flex-wrap:wrap;gap:4px 6px;margin-bottom:8px}
-.tt{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 7px;border-radius:4px;border:1px solid var(--line);background:var(--panel)}
+.tt{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 7px;border-radius:5px;border:1px solid var(--line2);background:var(--panel2)}
 .tt.on{background:var(--gold-soft);border-color:var(--gold);color:var(--ink)}
-.tt.uniq{background:var(--accent-soft);border-color:var(--accent)}
-.tt.off{color:var(--muted);border-style:dashed}
-.tt .n{font-family:"IBM Plex Mono",monospace;font-weight:500}
+.tt.uniq{background:var(--violet-soft);border-color:var(--violet)}
+.tt.off{color:var(--muted);border-style:dashed;background:transparent}
+.tt .n{font-family:var(--mono);font-weight:500}
+.tt.on .n{color:var(--gold)}
 .tt .pips{display:inline-flex;gap:2px;margin-left:2px}
-.tt .pips i{width:5px;height:5px;border-radius:1px;background:var(--line);display:inline-block}
-.tt.on .pips i.f{background:var(--gold)}
-.breakdown{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;font-family:"IBM Plex Mono",monospace}
+.tt .pips i{width:5px;height:5px;border-radius:1px;background:var(--line2);display:inline-block}
+.tt.on .pips i.f{background:var(--gold);box-shadow:0 0 4px var(--gold)}
+.breakdown{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono)}
 .breakdown span b{color:var(--ink);font-weight:500}
 .eclipse{font-size:11.5px;color:var(--gold);font-weight:500}
+.metabadge{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 9px 2px 3px;font-size:11.5px;font-weight:600;white-space:nowrap;cursor:help}
+.metabadge img{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1px var(--accent-line)}
+.metabadge .tb{font-family:var(--disp);font-weight:700;font-size:11px;padding:0 4px;border-radius:3px;background:var(--accent);color:var(--accent-ink)}
+.metabadge.part{color:var(--muted);border-color:var(--line2);background:var(--panel2)}
+.metabadge.part .tb{background:var(--line2);color:var(--ink)}
 .foot{padding:10px 16px;color:var(--muted);font-size:11.5px;line-height:1.6;border-top:1px solid var(--line)}
+/* 공개(웹) 빌드: 가중치 내부 값은 감춤 */
+html.public .secret{display:none!important}
+.public-only{display:none}
+html.public .public-only{display:inline}
+.adslot{margin:0 auto 16px;max-width:1640px;padding:0 24px;display:flex;justify-content:center}
+.adslot:empty{display:none}
+@media (max-width:760px){.adslot{padding:0 16px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 <header class="top">
-  <h1>세트 18 덱 빌더</h1>
-  <span class="sub">고정 유닛을 포함해 <b>코스트</b>와 <b>시너지</b>를 함께 최대화하는 팀 구성</span>
+  <img class="logo" src="data:image/webp;base64,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" alt="잭 마스코트" width="46" height="46">
+  <h1>TFT Deck Builder <span class="zac">Zac</span></h1>
+  <span class="sub"><span class="set">SET 18</span> 고정 유닛을 포함해 <b>코스트</b>와 <b>시너지</b>를 함께 최대화하는 팀 구성</span>
   <span class="spacer"></span>
   <span class="meta mono" id="meta"></span>
 </header>
+<div id="adSlot" class="adslot"><!-- 광고 코드 자리 --></div>
 
 <div class="app">
   <!-- ── settings ── -->
@@ -245,8 +278,11 @@ details.adv .wgrid{margin-top:8px}
     <div class="sec">
       <h2>팀 크기</h2>
       <div class="row">
-        <span>레벨 / 슬롯</span>
-        <div class="seg" id="sizeSeg" role="group" aria-label="팀 크기">
+        <span>슬롯</span>
+        <div class="seg sz" id="sizeSeg" role="group" aria-label="팀 크기">
+          <button type="button" data-size="4" aria-pressed="false">4</button>
+          <button type="button" data-size="5" aria-pressed="false">5</button>
+          <button type="button" data-size="6" aria-pressed="false">6</button>
           <button type="button" data-size="7" aria-pressed="false">7</button>
           <button type="button" data-size="8" aria-pressed="true">8</button>
           <button type="button" data-size="9" aria-pressed="false">9</button>
@@ -327,37 +363,51 @@ details.adv .wgrid{margin-top:8px}
           <button type="button" data-preset="value" aria-pressed="false">고밸류</button>
           <button type="button" data-preset="balanced" aria-pressed="true">균형</button>
           <button type="button" data-preset="synergy" aria-pressed="false">알찬 시너지</button>
+          <button type="button" data-preset="realistic" aria-pressed="false">현실적</button>
+          <button type="button" data-preset="early" aria-pressed="false">초반 빌드업</button>
         </div>
+        <p class="hint" id="presetHint" style="margin:6px 0 0">균형 가중치. 5코스트 제한 없음.</p>
       </div>
-      <div class="costw" id="costW">
+      <div class="row">
+        <label for="maxCost">최대 코스트 <span class="q" title="이 코스트보다 비싼 유닛은 후보에서 제외합니다. '초반 빌드업' 프리셋은 3코스트까지만 씁니다. 고정한 유닛은 예외 없이 이 제한을 따르니, 4코를 넣고 싶으면 4로 올리세요.">?</span></label>
+        <select class="sm" id="maxCost" aria-label="최대 코스트"><option value="1">1코까지</option><option value="2">2코까지</option><option value="3">3코까지</option><option value="4">4코까지</option><option value="5" selected>제한 없음</option></select>
+      </div>
+      <div class="row">
+        <label for="max5">5코스트 최대 인원 <span class="q" title="팀에 넣을 수 있는 5코스트 유닛 수. 8레벨에서는 5코 확률이 낮아 '현실적' 프리셋은 2명으로 제한합니다. 장로 드래곤·럭스도 5코로 셉니다.">?</span></label>
+        <select class="sm" id="max5" aria-label="5코스트 최대 인원"><option value="0">0명</option><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option><option value="99" selected>제한 없음</option></select>
+      </div>
+      <div class="costw secret" id="costW">
         <label>1코<input class="num" type="number" step="0.5" data-cost="1" value="1"></label>
         <label>2코<input class="num" type="number" step="0.5" data-cost="2" value="2"></label>
         <label>3코<input class="num" type="number" step="0.5" data-cost="3" value="3"></label>
         <label>4코<input class="num" type="number" step="0.5" data-cost="4" value="5"></label>
         <label>5코<input class="num" type="number" step="0.5" data-cost="5" value="8"></label>
       </div>
-      <div class="wgrid" style="margin-top:10px">
+      <div class="wgrid secret" style="margin-top:10px">
         <span class="k">시너지 단계당 점수</span><input class="num" type="number" step="0.5" id="wSyn" value="3">
         <span class="k">활성 시너지 참여 유닛당 <span class="q" title="활성 특성에 이름을 올린 (유닛, 특성) 쌍마다 가산. 5개화면 5, 1치명적인 꽃이면 1.">?</span></span><input class="num" type="number" step="0.25" id="wUtil" value="0.5">
         <span class="k">무소속 유닛 감점 <span class="q" title="활성 특성이 하나도 없는 유닛 1명당 감점">?</span></span><input class="num" type="number" step="0.5" id="wOrphanUnit" value="2">
         <span class="k">미활성 특성 감점 (개당)</span><input class="num" type="number" step="0.5" id="wOrphan" value="0.5">
         <span class="k">고유 특성 유닛당 점수</span><input class="num" type="number" step="0.5" id="wUniq" value="1">
         <span class="k">일월식 보너스</span><input class="num" type="number" step="1" id="wEcl" value="6">
+        <span class="k">메타 반영 (유닛당) <span class="q" title="메타 덱 목록(선택한 출처)에서 자주 쓰이는 유닛에 가산. S 3점·A 2점·B 1점·C 0.5점으로 세어 가장 많이 쓰인 유닛을 1로 정규화한 뒤 이 값을 곱합니다. 특성만 세는 계산이 놓치는 캐리·탱커의 실전 가치를 보정합니다. 0이면 끔.">?</span></span><input class="num" type="number" step="0.5" id="wMeta" value="4">
+        <span class="k">슬롯 2 유닛 보정 <span class="q" title="장로 드래곤처럼 슬롯 2개를 쓰는 유닛은 자리 하나를 더 먹는 대신 유닛 2명 몫을 하므로, 그만큼 가산합니다.">?</span></span><input class="num" type="number" step="1" id="wSlot2" value="2">
       </div>
-      <details class="adv">
+      <details class="adv secret">
         <summary>특성별 가중치 (시너지 점수에 곱함)</summary>
-        <p class="hint" style="margin:6px 0 0">1명만 있어도 켜지는 특성(치명적인 꽃·경쟁자)은 기본 0.5로 낮춰 두었습니다.</p>
+        <p class="hint" style="margin:6px 0 0">1명만 있어도 켜지는 특성은 기본값을 낮춰 두었습니다(치명적인 꽃 0.25 · 경쟁자 0.5).</p>
         <div class="wgrid tw" id="traitW"></div>
       </details>
-      <details class="adv">
+      <details class="adv secret">
         <summary>고유 특성 개별 가중치</summary>
         <div class="wgrid" id="uniqW"></div>
       </details>
-      <details class="adv">
+      <details class="adv secret">
         <summary>탐색 설정</summary>
         <div class="wgrid">
           <span class="k">빔 폭</span><input class="num" type="number" step="50" min="50" max="3000" id="beamW" value="400">
           <span class="k">결과 개수</span><input class="num" type="number" step="1" min="1" max="20" id="nRes" value="5">
+          <span class="k">결과 다양성 <span class="q" title="결과끼리 최소 몇 명이 달라야 따로 보여줄지. '모두'면 1명만 바뀐 변형도 점수순으로 그대로 나옵니다.">?</span></span><select class="sm" id="diverse"><option value="1" selected>모두 표시</option><option value="2">2명 이상 달라야</option><option value="3">3명 이상 달라야</option></select>
         </div>
       </details>
     </div>
@@ -383,10 +433,11 @@ details.adv .wgrid{margin-top:8px}
           <button type="button" data-t="all" aria-pressed="true">전체</button><button type="button" data-t="S" aria-pressed="false">S</button><button type="button" data-t="A" aria-pressed="false">A</button><button type="button" data-t="B" aria-pressed="false">B</button><button type="button" data-t="C" aria-pressed="false">C</button>
         </div>
         <div class="seg" id="srcSeg" role="group" aria-label="출처">
-          <button type="button" data-s="metatft" aria-pressed="true">MetaTFT</button><button type="button" data-s="tftlabs" aria-pressed="false">tftlabs</button><button type="button" data-s="tftactics" aria-pressed="false">tftactics</button>
+          <button type="button" data-s="metatft" aria-pressed="true">MetaTFT</button><button type="button" data-s="tftactics" aria-pressed="false">tftactics</button>
         </div>
         <input type="search" id="metaQ" placeholder="덱 · 유닛 검색" aria-label="메타 덱 검색">
         <button type="button" class="mini" id="metaUpdBtn">업데이트</button>
+        <label id="autoUpdRow" hidden style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><button type="button" class="sw" id="swAutoUpd" role="switch" aria-checked="true" aria-label="시작 시 자동 업데이트"></button>시작 시 자동 업데이트</label>
       </div>
       <div class="upd" id="metaUpd" hidden>
         <p class="hint" style="margin:0 0 6px">이 페이지는 외부 사이트에 직접 접속할 수 없어서, 최신 메타는 <b>채팅에서 "메타 덱 업데이트"</b>라고 요청하거나 아래에 한 줄에 한 덱씩 붙여넣어 적용합니다(exe 버전은 자동 업데이트 버튼). 위에서 고른 출처(op.gg / tftactics)에 적용됩니다. 형식: <code>티어 | 덱 이름 | 유닛, 유닛, … | 메모</code> (유닛은 한글·영문 모두 가능, 메모는 선택)</p>
@@ -400,14 +451,32 @@ details.adv .wgrid{margin-top:8px}
       </div>
       <div id="metaList"></div>
     </details>
+    <details class="metabox" id="bestBox">
+      <summary><span class="ttl">우수 덱</span><span class="n mono" id="bestCount"></span><span class="src" id="bestSrc">프로그램이 직접 찾은 고득점 덱</span></summary>
+      <div class="metatools besttools">
+        <label>4코 <select class="sm" id="bestN4"><option value="1">1명</option><option value="2" selected>2명</option><option value="3">3명</option></select> 고정</label>
+        <label>5코 <select class="sm" id="bestN5"><option value="exact1" selected>정확히 1명</option><option value="max1">최대 1명</option><option value="max2">최대 2명</option><option value="none">0명</option><option value="any">제한 없음</option></select></label>
+        <label>팀 <select class="sm" id="bestSize"><option value="7">7명</option><option value="8" selected>8명</option><option value="9">9명</option></select></label>
+        <label>기준 <input class="num" type="number" id="bestMin" step="1" value="70" style="width:56px">점 이상</label>
+        <label>조합당 <select class="sm" id="bestPer"><option value="1">1팀</option><option value="2" selected>2팀</option><option value="3">3팀</option></select></label>
+        <button type="button" class="mini" id="bestRun">탐색 시작</button>
+        <button type="button" class="mini" id="bestStop" hidden>중지</button>
+        <button type="button" class="link" id="bestClear">비우기</button>
+        <button type="button" class="link" id="bestSave" hidden>저장</button>
+        <span class="hint" id="bestMsg" style="margin:0;width:100%"></span>
+        <progress id="bestProg" max="1" value="0" hidden style="width:100%"></progress>
+      </div>
+      <p class="hint" style="margin:0;padding:0 16px 10px">4코스트 유닛 조합(2명이면 91가지)을 하나씩 고정해 팀을 구성하고, 기준 점수 이상인 팀만 모아 둡니다. 지금 설정된 가중치·제외 유닛·특수 유닛 토글을 그대로 쓰고, 고정·필수 시너지·상징은 탐색 중에만 잠시 비웁니다. 같은 팀은 한 번만, 점수순으로 정렬됩니다.</p>
+      <div id="bestList"></div>
+    </details>
     <div id="roster"></div>
   </section>
 
   <!-- ── results ── -->
   <section class="card results">
     <div class="head"><h2>추천 팀</h2><span class="st" id="stat"></span></div>
-    <div id="out"><div class="empty">고정할 유닛을 고르고 <b>팀 구성</b>을 누르세요.<br>고정 없이 실행하면 설정 기준 최고 점수 팀을 찾습니다.</div></div>
-    <div class="foot">score = Σ 코스트 점수 + Σ(시너지 단계 × 단계당 점수 × 특성 가중치) + 참여 유닛 점수 + 고유 특성 점수 + 일월식 − 무소속 유닛 감점 − 미활성 특성 감점. 필수 시너지는 점수가 아니라 제약으로 적용. 점선 유닛 = 활성 시너지가 없는 무소속 유닛. 데이터: 세트 18 (2026-08-31 기준).</div>
+    <div id="out"><div class="empty"><img class="mascot" src="data:image/webp;base64,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" alt="" width="132" height="132"><div class="say">ZAC READY</div>고정할 유닛을 고르고 <b>팀 구성</b>을 누르세요.<br>고정 없이 실행하면 설정 기준 최고 점수 팀을 찾습니다.</div></div>
+    <div class="foot"><span class="secret">score = Σ 코스트 점수 + Σ(시너지 단계 × 단계당 점수 × 특성 가중치) + 참여 유닛 점수 + 고유 특성 점수 + 일월식 + 메타 반영(메타 덱 등장 빈도 × 가중치) + 슬롯 2 보정 − 무소속 유닛 감점 − 미활성 특성 감점. 필수 시너지는 점수가 아니라 제약으로 적용. 점선 유닛 = 활성 시너지가 없는 무소속 유닛. </span>데이터: 세트 18 (2026-08-31 기준).<span class="public-only"> 점수는 코스트·시너지·메타 반영을 종합한 자체 지표입니다.</span></div>
   </section>
 </div>
 
@@ -581,15 +650,23 @@ const S = {
   emblems:[], embRecommended:true,                        // emblems: [{t:traitIdx}] 보유한 상징
   lux:false, luxOrigin:'auto', kha:false, ren:false, ecl:false, rivalBoth:false,
   costW:{1:1,2:2,3:3,4:5,5:8}, wSyn:3, wUtil:0.5, wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6,
-  traitW:new Float32Array(NT).fill(1), uniqW:{}, beam:400, nRes:5
+  traitW:new Float32Array(NT).fill(1), uniqW:{}, wMeta:4, wSlot2:2, beam:400, nRes:5, diverse:1, max5:99, min5:0, maxCost:5
 };
 for (const id of ['malphite','maokai','kogmaw','taric','zyra','ivern','alune','elder','draven','lux']) S.uniqW[id]=1;
-S.traitW[TIDX['치명적인 꽃']]=0.5; S.traitW[TIDX['경쟁자']]=0.5;
+// 캐리형 고유 특성은 특성 수로는 잡히지 않는 실전 가치가 커서 기본값을 올림 (메타 덱 분석 09-18)
+Object.assign(S.uniqW,{ivern:3,draven:3,elder:2,taric:2,maokai:2});
+let META_W={};   // 유닛 id → 0~1 (메타 덱 등장 빈도, renderMeta에서 계산)
+S.traitW[TIDX['치명적인 꽃']]=0.25; S.traitW[TIDX['경쟁자']]=0.5;
 const PRESETS = {
-  value:    {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0,    wOrphanUnit:0, wOrphan:0,   wUniq:1, wEcl:6},
-  balanced: {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0.5,  wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6},
-  synergy:  {costW:{1:1,2:1.5,3:2,4:3,5:4}, wSyn:4, wUtil:1,    wOrphanUnit:4, wOrphan:1,   wUniq:0.5, wEcl:6},
+  value:    {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0,    wOrphanUnit:0, wOrphan:0,   wUniq:1, wEcl:6, wMeta:2, wSlot2:2},
+  balanced: {costW:{1:1,2:2,3:3,4:5,5:8},   wSyn:3, wUtil:0.5,  wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6, wMeta:4, wSlot2:2},
+  synergy:  {costW:{1:1,2:1.5,3:2,4:3,5:4}, wSyn:4, wUtil:1,    wOrphanUnit:4, wOrphan:1,   wUniq:0.5, wEcl:6, wMeta:2, wSlot2:2},
+  realistic:{costW:{1:1,2:2,3:3,4:5,5:6},   wSyn:3, wUtil:0.5,  wOrphanUnit:2, wOrphan:0.5, wUniq:1, wEcl:6, wMeta:4, wSlot2:2, max5:2},
+  // 초반 빌드업: 1~3코만, 4~5명. 모든 유닛이 활성 시너지에 참여하도록 무소속 감점을 크게, 3코는 조금 더 쳐줌
+  early:    {costW:{1:1,2:2,3:3.5,4:5,5:8}, wSyn:4, wUtil:1,    wOrphanUnit:4, wOrphan:1,   wUniq:0.5, wEcl:6, wMeta:3, wSlot2:2, max5:0, maxCost:3, size:5},
 };
+const PRESET_HINT = { value:'코스트 위주. 5코스트 제한 없음.', balanced:'균형 가중치. 5코스트 제한 없음.', synergy:'시너지 위주. 5코스트 제한 없음.', realistic:'8레벨에서 실제로 맞출 수 있는 팀 — 5코스트 최대 2명, 4코 중심.',
+  early:'초반 빌드업 — 1~3코스트만, 팀 4~5명. 뽀록으로 뜬 3코(또는 1·2코)를 목록에서 고정하고 실행하면 그 유닛을 중심으로 시너지를 맞춥니다.' };
 const REQ_BONUS = 60; // 탐색 유도용: 필수 시너지 진행도 1명당 (최종 점수에는 포함하지 않음)
 
 const $ = s=>document.querySelector(s);
@@ -606,6 +683,7 @@ function buildCandidates(){
   for (const id of ORDER){
     const u=UNIT[id];
     if (S.ban.has(id)) continue;
+    if (u.cost>S.maxCost) continue;                       // 최대 코스트 제한 (초반 빌드업)
     if (u.special==='lux'){
       if (!S.lux) continue;
       const origins = S.luxOrigin==='auto' ? LUX_ORIGINS : [S.luxOrigin];
@@ -667,15 +745,17 @@ function scoreOf(st, cands){
   const e=evalCounts(st.eff);
   const lone=loneUnits(st, cands);
   const cost=st.costPts, uniq=st.uniqPts;
-  const total = cost + S.wSyn*e.synW + S.wUtil*e.util + S.wUniq*uniq + (e.ecl?S.wEcl:0) - S.wOrphan*e.orphan - S.wOrphanUnit*lone;
-  return {total, cost, syn:e.syn, synW:e.synW, util:e.util, lone, uniq, ecl:e.ecl, orphan:e.orphan, tiers:e.tiers, active:Uint8Array.from(activeBuf), holders:st.holders||[], embMissing:st.embMissing||0};
+  let meta=0, slot2=0;
+  for (const idx of st.units){ const c=cands[idx]; if (S.wMeta) meta+=META_W[c.id]||0; if (c.slots>1) slot2+=c.slots-1; }
+  const total = cost + S.wSyn*e.synW + S.wUtil*e.util + S.wUniq*uniq + (e.ecl?S.wEcl:0) + S.wMeta*meta + S.wSlot2*slot2 - S.wOrphan*e.orphan - S.wOrphanUnit*lone;
+  return {total, cost, syn:e.syn, synW:e.synW, util:e.util, lone, uniq, ecl:e.ecl, orphan:e.orphan, meta, slot2, tiers:e.tiers, active:Uint8Array.from(activeBuf), holders:st.holders||[], embMissing:st.embMissing||0};
 }
 function reqProgress(counts){ let p=0; for (const r of S.req) p+=Math.min(counts[r.t], r.need); return p; }
 function reqSatisfied(counts){ return S.req.every(r=>counts[r.t]>=r.need); }
 function reqDeficit(counts){ let d=0; for (const r of S.req) d=Math.max(d, r.need-counts[r.t]); return d; }
-function newState(){ const s={units:[], slots:0, counts:new Uint8Array(NT), costPts:0, uniqPts:0, bases:new Set(), score:0, guide:0}; s.eff=s.counts; s.holders=[]; s.embMissing=S.emblems.length; return s; }
+function newState(){ const s={units:[], slots:0, c5:0, counts:new Uint8Array(NT), costPts:0, uniqPts:0, bases:new Set(), score:0, guide:0}; s.eff=s.counts; s.holders=[]; s.embMissing=S.emblems.length; return s; }
 function addUnit(st,c,cands){
-  const ns={ units:st.units.concat(c.idx), slots:st.slots+c.slots, counts:new Uint8Array(st.counts),
+  const ns={ units:st.units.concat(c.idx), slots:st.slots+c.slots, c5:st.c5+(c.cost===5?1:0), counts:new Uint8Array(st.counts),
              costPts:st.costPts+S.costW[c.cost], uniqPts:st.uniqPts+c.uniqW, bases:st.bases, score:0, guide:0 };
   if (c.base){ ns.bases=new Set(st.bases); ns.bases.add(c.base); }
   for (const [i,n] of c.tv) ns.counts[i]+=n;
@@ -688,6 +768,7 @@ function canAdd(st,c,size){
   if (st.slots+c.slots>size) return false;
   if (st.units.includes(c.idx)) return false;
   if (c.base && st.bases.has(c.base)) return false;
+  if (c.cost===5 && st.c5>=S.max5) return false;   // 5코스트 인원 제한
   return true;
 }
 const keyOf=st=>st.units.slice().sort((a,b)=>a-b).join(',');
@@ -707,9 +788,11 @@ function search(){
   const pinnedKeys=[];
   const luxAuto = S.pin.has('lux') && S.luxOrigin==='auto';
   for (const id of S.pin){
+    if (UNIT[id].cost>S.maxCost) throw new Error(`${UNIT[id].name}은(는) ${UNIT[id].cost}코스트라 '최대 코스트 ${S.maxCost}코' 설정에 걸립니다. 최대 코스트를 올리거나 고정을 해제하세요.`);
     if (id==='lux' && luxAuto){ pinnedKeys.push('lux'); continue; } // 계열 자동이면 변형별로 시작 상태를 나눔
     const c = id==='lux' ? cands.find(x=>x.key==='lux:'+S.luxOrigin) : cands.find(x=>x.id===id);
     if (!c) throw new Error(`${UNIT[id].name}은(는) 현재 설정에서 후보가 아닙니다.`);
+    if (c.cost===5 && st.c5>=S.max5) throw new Error(`5코스트 최대 ${S.max5}명 설정인데 고정한 5코스트가 더 많습니다: ${c.name}. '5코스트 최대 인원'을 올리거나 고정을 줄이세요.`);
     if (!canAdd(st,c,size)) throw new Error(`고정 유닛이 팀 크기(${size})를 넘거나 서로 충돌합니다: ${c.name}`);
     st=addUnit(st,c,cands); pinnedKeys.push(c.key);
   }
@@ -725,12 +808,12 @@ function search(){
   while (beam.length){
     const next=new Map();
     for (const s of beam){
-      if (s.slots===size){ if (reqSatisfied(s.eff) && (!S.embRecommended || s.embMissing===0)){ const k=keyOf(s); if(!finals.has(k)) finals.set(k,s); } continue; }
+      if (s.slots===size){ if (reqSatisfied(s.eff) && s.c5>=S.min5 && (!S.embRecommended || s.embMissing===0)){ const k=keyOf(s); if(!finals.has(k)) finals.set(k,s); } continue; }
       const remain=size-s.slots;
       for (const c of cands){
         if (!canAdd(s,c,size)) continue;
         const ns=addUnit(s,c,cands); evals++;
-        if (Math.max(reqDeficit(ns.eff), S.embRecommended?ns.embMissing:0) > remain-c.slots) continue;   // 남은 슬롯으로 필수 시너지·상징 보유자를 못 채우면 가지치기
+        if (Math.max(reqDeficit(ns.eff), S.embRecommended?ns.embMissing:0, S.min5-ns.c5) > remain-c.slots) continue;   // 남은 슬롯으로 필수 시너지·상징 보유자·최소 5코를 못 채우면 가지치기
         const k=keyOf(ns);
         if (!next.has(k)) next.set(k,ns);
       }
@@ -741,6 +824,7 @@ function search(){
   let list=[...finals.values()].sort((a,b)=>b.score-a.score).slice(0,Math.max(150,S.nRes*20));
   const improved=new Map();
   for (let s of list){
+    { const k0=keyOf(s); if(!improved.has(k0)) improved.set(k0,s); }   // 개선 전 원본도 후보로 남김 (1명 차이 변형이 사라지지 않도록)
     let changed=true, guard=0;
     while (changed && guard++<20){
       changed=false;
@@ -752,7 +836,7 @@ function search(){
         for (const c of cands){
           if (!canAdd(base,c,size) || base.slots+c.slots!==size) continue;
           const ns=addUnit(base,c,cands); evals++;
-          if (ns.score>s.score+1e-9 && reqSatisfied(ns.eff) && (!S.embRecommended || ns.embMissing===0)){ s=ns; changed=true; break; }
+          if (ns.score>s.score+1e-9 && reqSatisfied(ns.eff) && ns.c5>=S.min5 && (!S.embRecommended || ns.embMissing===0)){ s=ns; changed=true; break; }
         }
         if (changed) break;
       }
@@ -760,11 +844,11 @@ function search(){
     const k=keyOf(s); if(!improved.has(k)) improved.set(k,s);
   }
   let ranked=[...improved.values()].sort((a,b)=>b.score-a.score);
-  // 다양성: 이미 고른 팀과 2개 이상 다를 때만 채택, 부족하면 나머지로 채움
+  // 다양성: 이미 고른 팀과 S.diverse명 이상 다를 때만 채택(1이면 전부), 부족하면 나머지로 채움
   const picked=[];
   for (const s of ranked){
     const set=new Set(s.units);
-    const dup=picked.some(p=>{ let same=0; for(const u of p.units) if(set.has(u)) same++; return s.units.length-same<2; });
+    const dup=picked.some(p=>{ let same=0; for(const u of p.units) if(set.has(u)) same++; return s.units.length-same<S.diverse; });
     if (!dup) picked.push(s);
     if (picked.length>=S.nRes) break;
   }
@@ -776,20 +860,30 @@ function search(){
 /* ═══════════════════ UI: 설정 ═══════════════════ */
 function readNumbers(){
   document.querySelectorAll('#costW input').forEach(i=>S.costW[i.dataset.cost]=+i.value||0);
-  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl']) S[k]=+$('#'+k).value||0;
-  S.beam=Math.min(3000,Math.max(50,+$('#beamW').value||400)); S.nRes=Math.min(20,Math.max(1,+$('#nRes').value||5));
+  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl','wMeta','wSlot2']) S[k]=+$('#'+k).value||0;
+  S.beam=Math.min(3000,Math.max(50,+$('#beamW').value||400)); S.nRes=Math.min(20,Math.max(1,+$('#nRes').value||5)); S.diverse=+$('#diverse').value||1;
+  S.max5=+$('#max5').value; S.maxCost=+$('#maxCost').value;
   document.querySelectorAll('#uniqW input').forEach(i=>S.uniqW[i.dataset.id]=+i.value||0);
   document.querySelectorAll('#traitW input').forEach(i=>S.traitW[+i.dataset.t]=+i.value||0);
 }
 function applyPreset(name){
   const p=PRESETS[name]; if(!p) return;
   document.querySelectorAll('#costW input').forEach(i=>i.value=p.costW[i.dataset.cost]);
-  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl']) $('#'+k).value=p[k];
+  for (const k of ['wSyn','wUtil','wOrphanUnit','wOrphan','wUniq','wEcl','wMeta','wSlot2']) $('#'+k).value=p[k]??0;
+  $('#max5').value=String(p.max5??99); S.max5=p.max5??99;
+  $('#maxCost').value=String(p.maxCost??5); S.maxCost=p.maxCost??5;
+  // 팀 크기: 초반 빌드업은 5명으로, 다른 프리셋은 초반용 크기(≤6)에 남아 있으면 8로 되돌림
+  if (p.size){ if (S.size>6) setSize(p.size); } else if (S.size<7) setSize(8);
   $('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.preset===name));
+  $('#presetHint').textContent=PRESET_HINT[name]||'';
+  renderRoster(); renderPins(); renderReq(); renderEmblems();
 }
+function unpressPresets(){ $('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false')); }
+$('#maxCost').addEventListener('change',()=>{ S.maxCost=+$('#maxCost').value; unpressPresets(); $('#presetHint').textContent=S.maxCost>=5?'코스트 제한 없음.':`${S.maxCost}코스트까지만 후보로 씁니다.`; renderRoster(); });
 $('#presetSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) applyPreset(b.dataset.preset); });
 // 수치를 직접 고치면 프리셋 표시 해제
 document.querySelectorAll('.settings input.num:not(#embN)').forEach(i=>i.addEventListener('input',()=>$('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'))));
+$('#max5').addEventListener('change',()=>{ S.max5=+$('#max5').value; $('#presetSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false')); $('#presetHint').textContent=S.max5>=99?'5코스트 제한 없음.':`5코스트 최대 ${S.max5}명.`; });
 
 /* 특성별 가중치 표 */
 $('#traitW').innerHTML=TRAITS.map((t,i)=>t.kind==='unique'?'':`<span class="k">${t.name}</span><input class="num" type="number" step="0.25" min="0" data-t="${i}" value="${S.traitW[i]}">`).join('');
@@ -835,7 +929,7 @@ function syncSpecial(){
   renderPins(); renderRoster();
 }
 // 고유 특성 개별 가중치
-$('#uniqW').innerHTML=Object.keys(S.uniqW).map(id=>`<span class="k">${UNIT[id].name} · ${UNIT[id].uniq}</span><input class="num" type="number" step="0.5" data-id="${id}" value="1">`).join('');
+$('#uniqW').innerHTML=Object.keys(S.uniqW).map(id=>`<span class="k">${UNIT[id].name} · ${UNIT[id].uniq}</span><input class="num" type="number" step="0.5" data-id="${id}" value="${S.uniqW[id]}">`).join('');
 
 /* ═══════════════════ UI: 로스터 ═══════════════════ */
 function cycle(id){
@@ -853,7 +947,7 @@ function cycle(id){
   renderPins(); renderRoster();
 }
 function unitState(id){ return S.pin.has(id)?'pin':S.ban.has(id)?'ban':''; }
-function isOff(u){ return (u.special==='lux'&&!S.lux)||(u.special==='kha'&&!S.kha)||(u.special==='ren'&&!S.ren); }
+function isOff(u){ return (u.special==='lux'&&!S.lux)||(u.special==='kha'&&!S.kha)||(u.special==='ren'&&!S.ren)||u.cost>S.maxCost; }
 function traitText(u){
   if (u.special==='lux') return '화신 + '+(S.luxOrigin==='auto'?'선택 계열 ×2':S.luxOrigin+' ×2');
   if (u.special==='elder') return '협곡야수 ×2 · 최상위 포식자 · 슬롯 2';
@@ -924,6 +1018,29 @@ function renderPins(){
 $('#pinList').addEventListener('click',e=>{ const b=e.target.closest('.x'); if(!b) return; S.pin.delete(b.dataset.id); S.ban.delete(b.dataset.id); renderPins(); renderRoster(); });
 
 /* ═══════════════════ UI: 결과 ═══════════════════ */
+// 결과 팀이 메타 덱과 얼마나 겹치는지: 유닛 6명 이상(7명 덱은 6명) 겹치면 "메타덱", 그보다 조금 모자라면 "메타덱 근접"
+const ZAC_ICON=document.querySelector('.top .logo').getAttribute('src');
+function metaMatch(ids){
+  const set=new Set(ids); let best=null;
+  for (const src of ['metatft','tftactics']){
+    for (const d of (META_BY_SRC[src]||[])){
+      const n=d.units.length; if(n<6) continue;   // 대표 유닛만 있는 덱은 비교 대상 아님
+      let common=0; for (const u of d.units) if(set.has(u)) common++;
+      const full = common>=Math.min(6,n-1) && common/n>=0.7;
+      const near = !full && common>=5 && common/n>=0.6;
+      if (!full && !near) continue;
+      const rank=(full?2:1)*100 + common/n*10 + ({S:3,A:2,B:1}[d.tier]||0)*0.1;
+      if (!best || rank>best.rank) best={deck:d, common, n, full, src, rank};
+    }
+  }
+  return best;
+}
+function metaBadge(ids){
+  const m=metaMatch(ids); if(!m) return '';
+  const d=m.deck; const label=META_SOURCES[m.src]?META_SOURCES[m.src].label:m.src;
+  const title=`${label} 메타 덱 "${d.ko}"(${d.tier}) 유닛 ${m.n}명 중 ${m.common}명 일치${d.note?' · '+d.note:''}`;
+  return `<span class="metabadge ${m.full?'':'part'}" title="${title}"><img src="${ZAC_ICON}" alt="">${m.full?'메타덱':'메타덱 근접'}<span class="tb">${d.tier}</span>${d.ko} <span style="font-family:var(--mono);font-weight:500">${m.common}/${m.n}</span></span>`;
+}
 function renderResults(r){
   const {teams,cands,evals,pinnedKeys}=r;
   $('#stat').textContent=`${teams.length}개 팀 · 평가 ${evals.toLocaleString()}회`;
@@ -945,16 +1062,20 @@ function renderResults(r){
     const tHtml=active.map(t=>`<span class="tt on ${reqSet.has(t[0])?'req':''}" title="${TRAITS[t[0]].bps.join('/')} · 가중치 ${S.traitW[t[0]]}${embCnt[t[0]]?` · 상징 +${embCnt[t[0]]} 포함`:''}"><span class="n">${t[1]}</span>${TRAITS[t[0]].name}${embCnt[t[0]]?`<span class="embtag">+상징${embCnt[t[0]]>1?'×'+embCnt[t[0]]:''}</span>`:''}${pip(t)}</span>`).join('')
       + uniqs.map(n=>`<span class="tt uniq">${n}</span>`).join('')
       + inactive.map(t=>`<span class="tt off"><span class="n">${t[1]}</span>${TRAITS[t[0]].name}</span>`).join('');
-    const bd=[`<span>코스트 <b>${sc.cost}</b></span>`, `<span>시너지 <b>${(S.wSyn*sc.synW).toFixed(1)}</b> (${sc.syn}단계)</span>`];
+    const n5=us.filter(c=>c.cost===5).length;
+    const bd=[`<span>코스트 <b>${sc.cost}</b>${n5?` (5코 ${n5}명)`:''}</span>`, `<span>시너지 <b>${(S.wSyn*sc.synW).toFixed(1)}</b> (${sc.syn}단계)</span>`];
     if (S.wUtil) bd.push(`<span>참여 <b>${(S.wUtil*sc.util).toFixed(1)}</b> (${sc.util}명)</span>`);
     if (S.wUniq&&sc.uniq) bd.push(`<span>고유 <b>${(S.wUniq*sc.uniq).toFixed(1)}</b></span>`);
     if (sc.ecl) bd.push(`<span class="eclipse">일월식 +${S.wEcl}</span>`);
+    if (S.wMeta&&sc.meta) bd.push(`<span title="메타 덱 등장 빈도 합 ${sc.meta.toFixed(2)} × ${S.wMeta}">메타 <b>${(S.wMeta*sc.meta).toFixed(1)}</b></span>`);
+    if (S.wSlot2&&sc.slot2) bd.push(`<span>슬롯2 <b>+${(S.wSlot2*sc.slot2).toFixed(1)}</b></span>`);
     if (S.wOrphanUnit&&sc.lone) bd.push(`<span>무소속 −${(S.wOrphanUnit*sc.lone).toFixed(1)} (${sc.lone}명)</span>`);
     if (S.wOrphan&&sc.orphan) bd.push(`<span>미활성 −${(S.wOrphan*sc.orphan).toFixed(1)} (${sc.orphan}개)</span>`);
     const code=teamCode(us.map(c=>c.id));
     html+=`<div class="team"><div class="th"><span class="rank">${ri+1}</span><span class="score">${sc.total.toFixed(1)}<small>점</small></span><span class="costsum">코스트 합 <b>${costSum}</b> · 슬롯 ${s.slots}</span><button type="button" class="codebtn" data-code="${code}" title="${code}">팀 코드 복사</button></div>
+      ${(()=>{ const b=metaBadge(us.map(c=>c.id)); return b?`<div style="margin:-2px 0 8px">${b}</div>`:''; })()}
       <div class="tunits">${uHtml}</div><div class="traits">${tHtml}</div>
-      <div class="breakdown">${bd.join('')}</div></div>`;
+      <div class="breakdown secret">${bd.join('')}</div></div>`;
   });
   $('#out').innerHTML=html;
 }
@@ -1169,7 +1290,13 @@ function deckSynergies(units){
   for (let i=0;i<NT;i++){ const c=counts[i]; if(!c||TRAITS[i].kind==='unique') continue; let tier=0; for(const b of TRAITS[i].bps){ if(c>=b) tier++; else break; } if(tier) out.push({i,c,tier}); }
   return out.sort((a,b)=>b.c-a.c||b.tier-a.tier);
 }
+function computeMetaW(){
+  const tw={S:3,A:2,B:1,C:0.5,D:0.25}; const cnt={};
+  for (const d of META){ const w=tw[d.tier]??0.5; for (const id of d.units) cnt[id]=(cnt[id]||0)+w; }
+  const mx=Math.max(1,...Object.values(cnt)); META_W={}; for (const id in cnt) META_W[id]=cnt[id]/mx;
+}
 function renderMeta(){
+  computeMetaW();
   const q=($('#metaQ').value||'').trim().toLowerCase();
   $('#metaCount').textContent=META.length; $('#metaSrc').textContent=META_SOURCE;
   $('#metaList').innerHTML=META.map((d,k)=>{
@@ -1213,6 +1340,79 @@ $('#metaApply').addEventListener('click',()=>{
   if (!decks.length){ $('#metaMsg').textContent='읽을 수 있는 덱이 없습니다. '+(errors[0]||''); return; }
   META_BY_SRC[META_SRC]=decks; META=decks; renderMeta(); $('#metaMsg').textContent=`${decks.length}개 덱 적용` + (errors.length?` · 경고 ${errors.length}건: ${errors.slice(0,2).join(' / ')}`:'');
 });
+/* ═══════════════════ 우수 덱: 4코 조합을 차례로 고정해 고득점 팀 자동 수집 ═══════════════════ */
+const DATA_BEST='data/best.json', BEST_LS='tft18_best', BEST_CAP=300;
+let BEST=[], bestRun=null;
+function bestKey(ids){ return ids.slice().sort().join(','); }
+function bestAdd(d){
+  const k=bestKey(d.units); const ex=BEST.find(x=>bestKey(x.units)===k);
+  if (ex){ if (d.score>ex.score){ ex.score=d.score; ex.pair=d.pair; ex.ts=d.ts; } return false; }
+  BEST.push(d); return true;
+}
+function bestSort(){ BEST.sort((a,b)=>b.score-a.score); if (BEST.length>BEST_CAP) BEST.length=BEST_CAP; }
+function combos(arr,k){ const out=[]; (function rec(start,cur){ if(cur.length===k){ out.push(cur.slice()); return; } for(let i=start;i<arr.length;i++){ cur.push(arr[i]); rec(i+1,cur); cur.pop(); } })(0,[]); return out; }
+function renderBest(){
+  $('#bestCount').textContent=BEST.length;
+  if (!BEST.length){ $('#bestList').innerHTML='<div class="empty" style="padding:14px 16px">아직 모아 둔 덱이 없습니다. 위에서 <b>탐색 시작</b>을 누르세요.</div>'; return; }
+  $('#bestList').innerHTML=BEST.map((d,k)=>{
+    const us=d.units.map(id=>UNIT[id]).sort((a,b)=>b.cost-a.cost||a.name.localeCompare(b.name,'ko')).map(u=>`<span style="--cc:var(--c${u.cost})${d.pair.includes(u.id)?';border-color:var(--pin)':''}"><i></i>${u.name}</span>`).join('');
+    const syn=deckSynergies(d.units).slice(0,5).map(s=>`<span>${s.c} ${TRAITS[s.i].name}</span>`).join('');
+    const n5=d.units.filter(id=>UNIT[id].cost===5).length, cost=d.units.reduce((a,id)=>a+UNIT[id].cost,0);
+    return `<div class="deck" data-k="${k}"><span class="tb score">${d.score.toFixed(1)}</span><div><div class="dn">${d.pair.map(id=>UNIT[id].name).join(' + ')}<small>${d.units.length}명 · 코스트 합 ${cost}${n5?' · 5코 '+n5:''}${d.label?' · '+d.label:''}</small></div><div class="du">${us}</div><div class="ds">${syn}${metaBadge(d.units)}</div></div><div class="da"><button type="button" data-act="pin" title="이 덱의 유닛을 전부 고정하고 팀을 구성합니다">고정으로 불러오기</button><button type="button" data-act="code" title="인게임 팀 플래너용 코드 복사">팀 코드 복사</button><button type="button" data-act="del">삭제</button></div></div>`;
+  }).join('');
+}
+$('#bestList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]'); if(!b) return; const k=+b.closest('.deck').dataset.k; const d=BEST[k];
+  if (b.dataset.act==='pin') loadDeckAsPins({ko:d.pair.map(id=>UNIT[id].name).join('+')+' 우수 덱', units:d.units});
+  else if (b.dataset.act==='code') copyText(teamCode(d.units),'팀 코드 복사');
+  else { BEST.splice(k,1); renderBest(); bestPersist(); }
+});
+$('#bestClear').addEventListener('click',()=>{ if(!BEST.length) return; BEST=[]; renderBest(); bestPersist(); toast('우수 덱 목록을 비웠습니다'); });
+function bestPersist(){
+  try{ localStorage.setItem(BEST_LS, JSON.stringify(BEST)); }catch(e){}
+  if (HOST || artifactNS) saveFiles({[DATA_BEST]:JSON.stringify(BEST)}, $('#bestMsg'));
+}
+$('#bestSave').addEventListener('click',bestPersist);
+function bestLoadLocal(){ try{ const j=JSON.parse(localStorage.getItem(BEST_LS)||'[]'); if(Array.isArray(j)&&j.length&&!BEST.length){ BEST=j.filter(d=>d&&Array.isArray(d.units)&&d.units.every(id=>UNIT[id])); bestSort(); renderBest(); } }catch(e){} }
+$('#bestRun').addEventListener('click',()=>{
+  if (bestRun) return;
+  readNumbers();
+  const n4=+$('#bestN4').value, n5=$('#bestN5').value, size=+$('#bestSize').value, min=+$('#bestMin').value||0, per=+$('#bestPer').value;
+  const fours=ORDER.filter(id=>UNIT[id].cost===4 && !S.ban.has(id));
+  const list=combos(fours,n4);
+  if (!list.length){ $('#bestMsg').textContent='4코스트 후보가 부족합니다.'; return; }
+  // 탐색 중에만 바꾸는 상태 — 끝나면 원래대로
+  const saved={pin:S.pin, req:S.req, emblems:S.emblems, size:S.size, max5:S.max5, min5:S.min5, maxCost:S.maxCost, nRes:S.nRes, beam:S.beam};
+  S.req=[]; S.emblems=[]; S.size=size; S.maxCost=5; S.nRes=per; S.beam=Math.min(S.beam,300);
+  ({exact1:()=>{S.max5=1;S.min5=1;}, max1:()=>{S.max5=1;S.min5=0;}, max2:()=>{S.max5=2;S.min5=0;}, none:()=>{S.max5=0;S.min5=0;}, any:()=>{S.max5=99;S.min5=0;}})[n5]();
+  const presetBtn=$('#presetSeg button[aria-pressed="true"]'); const label=(presetBtn?presetBtn.textContent:'사용자 가중치')+` · ${size}명 · 5코 ${$('#bestN5').selectedOptions[0].textContent}`;
+  const t0=performance.now(); let i=0, found=0, added=0;
+  bestRun={stop:false};
+  $('#bestRun').hidden=true; $('#bestStop').hidden=false; $('#runBtn').disabled=true; $('#bestProg').hidden=false; $('#bestProg').max=list.length; $('#bestProg').value=0;
+  const finish=()=>{
+    Object.assign(S,saved); bestRun=null;
+    $('#bestRun').hidden=false; $('#bestStop').hidden=true; $('#runBtn').disabled=false; $('#bestProg').hidden=true;
+    bestSort(); renderBest();
+    $('#bestMsg').textContent=`${i}/${list.length} 조합 탐색 · ${((performance.now()-t0)/1000).toFixed(0)}초 · ${min}점 이상 ${found}팀 중 새로 ${added}팀 추가 (총 ${BEST.length}팀)`;
+    if (added) bestPersist();
+  };
+  const step=()=>{
+    if (bestRun.stop || i>=list.length){ finish(); return; }
+    const pair=list[i++]; S.pin=new Set(pair);
+    try{
+      const r=search();
+      for (const t of r.teams){ if (t.score>=min){ found++; if (bestAdd({units:t.units.map(k=>r.cands[k].id), score:t.score, pair, ts:Date.now(), label})) added++; } }
+    }catch(e){}
+    $('#bestProg').value=i; $('#bestMsg').textContent=`${i}/${list.length} 조합 탐색 중 (${pair.map(id=>UNIT[id].name).join('+')}) · ${min}점 이상 ${found}팀`;
+    if (i%5===0){ bestSort(); renderBest(); }
+    setTimeout(step,0);
+  };
+  $('#bestBox').open=true;
+  setTimeout(step,20);
+});
+$('#bestStop').addEventListener('click',()=>{ if(bestRun) bestRun.stop=true; });
+renderBest(); bestLoadLocal();
+
 let toastT=null;
 function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; document.body.appendChild(t); } t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,2600); }
 
@@ -1220,7 +1420,7 @@ function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.
 const DATA_META={metatft:'data/meta_metatft.txt', tftlabs:'data/meta_tftlabs.txt', tftactics:'data/meta.txt'}, DATA_BIS='data/bis.json';
 async function loadSavedData(){
   try{
-    for (const s of ['metatft','tftlabs','tftactics']){ try{ const r=await fetch(DATA_META[s],{cache:'no-store'}); if(r.ok){ const t=await r.text(); const p=parseMeta(t); if(p.decks.length){ META_BY_SRC[s]=p.decks; const sm=t.match(/^#\s*source:\s*(.+)$/m); if(sm) META_SOURCES[s].source=sm[1].trim(); } } }catch(e){} }
+    for (const s of ['metatft','tftactics']){ try{ const r=await fetch(DATA_META[s],{cache:'no-store'}); if(r.ok){ const t=await r.text(); const p=parseMeta(t); if(p.decks.length){ META_BY_SRC[s]=p.decks; const sm=t.match(/^#\s*source:\s*(.+)$/m); if(sm) META_SOURCES[s].source=sm[1].trim(); } } }catch(e){} }
     setMetaSrc(META_SRC);
   }catch(e){}
   try{
@@ -1229,22 +1429,31 @@ async function loadSavedData(){
   try{
     const r=await fetch('data/emblems.json',{cache:'no-store'}); if(r.ok){ const j=await r.json(); for(const t in j) if(TIDX[t]!==undefined&&Array.isArray(j[t])) EMBLEM_HOLDERS[t]=j[t].filter(id=>UNIT[id]); renderEmblems(); }
   }catch(e){}
+  try{
+    const r=await fetch(DATA_BEST,{cache:'no-store'}); if(r.ok){ const j=await r.json(); if(Array.isArray(j)){ for(const d of j) if(d&&Array.isArray(d.units)&&d.units.every(id=>UNIT[id])&&Array.isArray(d.pair)) bestAdd(d); bestSort(); renderBest(); } }
+  }catch(e){}
 }
 let artifactNS=null, HOST=false;
 async function initHost(){
   try{ const r=await fetch('/__tft/ping',{cache:'no-store'}); if(r.ok && (await r.text()).trim()==='tft-host') HOST=true; }catch(e){}
   if (!HOST) return;
-  $('#metaSave').hidden=false; $('#bisSave').hidden=false; $('#metaFetch').hidden=false;
+  $('#metaSave').hidden=false; $('#bisSave').hidden=false; $('#bestSave').hidden=false; $('#metaFetch').hidden=false;
   setInterval(()=>fetch('/__tft/ping',{cache:'no-store'}).catch(()=>{}),15000);   // 창이 닫히면 프로그램이 종료되도록 하는 생존 신호
+  // 시작 시 자동 업데이트 (프로그램을 켤 때마다 전체 출처 갱신, 끌 수 있음)
+  $('#autoUpdRow').hidden=false;
+  let auto=true; try{ auto=localStorage.getItem('tft18_autoupd')!=='0'; }catch(e){}
+  setSwitch($('#swAutoUpd'),auto);
+  $('#swAutoUpd').addEventListener('click',()=>{ auto=!auto; setSwitch($('#swAutoUpd'),auto); try{ localStorage.setItem('tft18_autoupd',auto?'1':'0'); }catch(e){} });
+  if (auto){ $('#metaBox').open=true; toast('메타 덱 자동 업데이트 중…'); setTimeout(()=>$('#metaFetch').click(), 800); }
 }
 $('#metaFetch').addEventListener('click',async()=>{
   const btn=$('#metaFetch'); btn.disabled=true;
   const msgs=[];
-  for (const s of ['tftactics','metatft','tftlabs']){
+  for (const s of ['tftactics','metatft']){
     $('#metaMsg').textContent=`${META_SOURCES[s].label} 받는 중… ${msgs.length?'('+msgs.join(' · ')+')':''}`;
     try{
       const r=await fetch('/__tft/update?src='+s,{method:'POST'}); const j=await r.json();
-      if(!j.ok){ msgs.push(`${META_SOURCES[s].label} 실패(기존 유지)`); continue; }
+      if(!j.ok){ msgs.push(`${META_SOURCES[s].label} 실패(기존 유지)${j.error?': '+String(j.error).slice(0,140):''}`); continue; }
       const p=parseMeta(j.text);
       if (!p.decks.length){ msgs.push(`${META_SOURCES[s].label} 실패(기존 유지)`); continue; }
       META_BY_SRC[s]=p.decks; if(j.source) META_SOURCES[s].source=j.source;
@@ -1262,7 +1471,7 @@ async function initSelfSave(){
   if (!window.claude || typeof window.claude.use!=='function') return;
   try{ artifactNS=await window.claude.use('artifact'); }catch(e){ artifactNS=null; }
   if (!artifactNS) return;
-  $('#metaSave').hidden=false; $('#bisSave').hidden=false;
+  $('#metaSave').hidden=false; $('#bisSave').hidden=false; $('#bestSave').hidden=false;
 }
 async function saveFiles(files, msgEl){
   if (HOST){
