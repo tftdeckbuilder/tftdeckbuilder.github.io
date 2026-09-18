@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /data/debug/
+
+Sitemap: https://tftdeckbuilder.github.io/sitemap.xml
