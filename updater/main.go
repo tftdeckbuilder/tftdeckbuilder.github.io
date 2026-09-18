@@ -1,4 +1,4 @@
-// TFT 세트 18 덱 빌더 — Windows 실행 파일
+// TFT Deck Builder Zac (세트 18) — Windows 실행 파일
 // 내장된 덱 빌더 페이지를 로컬 서버(127.0.0.1)로 띄우고 브라우저 앱 창으로 엽니다.
 // 페이지 안의 [tftactics.gg에서 자동 업데이트] 버튼은 이 프로그램이 대신 사이트를 읽어 처리합니다.
 package main
@@ -162,7 +162,7 @@ func handleSave(w http.ResponseWriter, r *http.Request) {
 }
 
 // 페이지가 읽고 쓰는 데이터 파일 (data/ 폴더)
-var dataFiles = map[string]bool{"meta.txt": true, "meta_metatft.txt": true, "meta_tftlabs.txt": true, "bis.json": true, "emblems.json": true}
+var dataFiles = map[string]bool{"meta.txt": true, "meta_metatft.txt": true, "meta_tftlabs.txt": true, "bis.json": true, "emblems.json": true, "best.json": true}
 
 // 디버그 덤프: data/debug/ 아래에 저장 (큰 파일은 앞부분만)
 const debugMax = 900 << 10
@@ -210,10 +210,26 @@ func runUpdate(src string) (*updateResult, error) {
 	case "lolchess":
 		url, file, label = lolchessURL, "meta_metatft.txt", "lolchess.gg"
 	}
+	client := &http.Client{Timeout: 60 * time.Second}
+	// MetaTFT: 공식 comps API(metatft.go)만 사용. 페이지 HTML/DOM에는 덱 데이터가 없어 렌더링·번들 탐색은 하지 않는다.
+	if src == "metatft" {
+		cs, err := updateMetatftAPI(client)
+		if err != nil {
+			return nil, fmt.Errorf("MetaTFT API 실패 — %v", err)
+		}
+		if len(cs) < 5 {
+			return nil, fmt.Errorf("MetaTFT 덱이 %d개뿐입니다", len(cs))
+		}
+		source := label + " · " + time.Now().Format("2006-01-02") + " (" + mtFilterLabel + ")"
+		text := "# source: " + source + "\n" + labsText(cs)
+		if err := os.WriteFile(filepath.Join(dataDir, file), []byte(text), 0o644); err != nil {
+			return nil, fmt.Errorf("저장 실패: %v", err)
+		}
+		return &updateResult{Count: len(cs), Text: text, Source: source, File: file}, nil
+	}
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
-	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("사이트 접속 실패: %v", err)
@@ -329,7 +345,7 @@ func runCLI(args []string) int {
 				i++
 			}
 		case "-h", "--help", "-help":
-			fmt.Println("사용법: TFT_Set18_DeckBuilder -update all|tftactics,metatft,tftlabs [-data 폴더]")
+			fmt.Println("사용법: TFT_Deck_Builder_Zac -update all|tftactics,metatft,tftlabs [-data 폴더]")
 			return 0
 		default:
 			fmt.Println("알 수 없는 옵션:", args[i])
@@ -337,11 +353,11 @@ func runCLI(args []string) int {
 		}
 	}
 	if srcs == "" {
-		fmt.Println("사용법: TFT_Set18_DeckBuilder -update all|tftactics,metatft,tftlabs [-data 폴더]")
+		fmt.Println("사용법: TFT_Deck_Builder_Zac -update all|tftactics,metatft,tftlabs [-data 폴더]")
 		return 2
 	}
 	if srcs == "all" {
-		srcs = "tftactics,metatft,tftlabs"
+		srcs = "tftactics,metatft"
 	}
 	os.MkdirAll(dataDir, 0o755)
 	logFile, _ = os.OpenFile(filepath.Join(dataDir, "tftdeck.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
@@ -841,6 +857,10 @@ func httpGet(client *http.Client, url string) ([]byte, int, error) {
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Origin", "https://www.metatft.com")
 	req.Header.Set("Referer", "https://www.metatft.com/comps")
+	req.Header.Set("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+	req.Header.Set("Sec-Fetch-Site", "same-site")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, 0, err
