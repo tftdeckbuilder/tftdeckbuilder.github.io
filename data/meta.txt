@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-09-20
+# source: tftactics.gg · 2026-09-21
 S | Consuming Flora | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
 S | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
 S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
