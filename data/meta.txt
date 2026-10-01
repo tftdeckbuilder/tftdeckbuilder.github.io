@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-09-30
+# source: tftactics.gg · 2026-10-01
 S | Sprykin Summoners | Veigar, Teemo, Azir, Fiddlesticks, Rammus, Ezreal, Soraka, Zyra
 S | Coven Invokers | Pebbles, Diana, Hecarim, Kogmaw, Brambleback, Morgana, Sentinel, Taric
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
