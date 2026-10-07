@@ -1,16 +1,17 @@
-# source: tftactics.gg · 2026-10-06
+# source: tftactics.gg · 2026-10-07
+S | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Rengar, Vi, Nidalee, Sett
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
+S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
 S | Lunar Rapidfire | Varus, Diana, Kogmaw, Vi, Amumu, Aphelios, Nidalee, Sentinel
+S | Riftbeasts Reroll | Cinderling, Krug, Pebbles, Murkwolf, Scuttlecrab, Brambleback, Sentinel, Gnar
 S | Rivals Khazix | Ornn, Diana, Hecarim, Fiddlesticks, Khazix, Aphelios, Ezreal, Soraka
 S | Sprykin Summoners | Veigar, Teemo, Azir, Fiddlesticks, Rammus, Ezreal, Soraka, Zyra
-A | Coven Invokers | Pebbles, Diana, Hecarim, Kogmaw, Brambleback, Morgana, Sentinel, Taric
-A | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
 A | Apex Predator | Pebbles, Murkwolf, Krug, Brambleback, Sentinel, Elder_dragon, Gnar, Taric
 A | Blackthorn Sprykin | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
 A | Blossom Executioners | Alistar, Leblanc, Yunara, Ahri, Ezreal, Sett, Soraka, Kennen
 A | Blossom Spellweavers | Karma, Yorick, Vi, Ahri, Sett, Sivir, Ashe, Gnar
-A | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Vi, Nidalee, Sett, Gnar
 A | Consuming Flora | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
+A | Coven Invokers | Pebbles, Diana, Hecarim, Kogmaw, Brambleback, Morgana, Sentinel, Taric
 A | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
 A | Elderwood Rapidfire | Ornn, Xayah, Alistar, Leblanc, Aphelios, Lillia, Alune, Gnar
 A | Elderwood Spellweavers | Ornn, Yunara, Fiddlesticks, Ahri, Ezreal, Sett, Soraka, Gnar
@@ -24,7 +25,6 @@ A | Juggernaut Summoners | Yorick, Scuttlecrab, Sejuani, Vi, Amumu, Sivir, Zyra,
 A | Primal Adaptors | Akali, Diana, Kogmaw, Master_yi, Vi, Amumu, Nidalee, Sentinel
 A | Primal Hunters | Shen, Tristana, Vi, Amumu, Lillia, Sivir, Ashe, Kennen
 A | Riftbeast Ravagers | Pebbles, Murkwolf, Krug, Sentinel, Brambleback, Elder_dragon, Taric
-A | Riftbeasts Reroll | Cinderling, Krug, Pebbles, Murkwolf, Scuttlecrab, Brambleback, Sentinel, Gnar
 A | Rivals Rengar | Diana, Hecarim, Mama_beak, Rengar, Aphelios, Brambleback, Sentinel, Taric
 A | Solar Rapidfire | Leona, Varus, Kayle, Sejuani, Shen, Diana, Aphelios, Alune
 A | Spellweaver Defenders | Leona, Ornn, Shen, Cassiopeia, Fiddlesticks, Rammus, Lillia, Soraka
