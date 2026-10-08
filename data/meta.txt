@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-10-07
+# source: tftactics.gg · 2026-10-08
 S | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Rengar, Vi, Nidalee, Sett
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
 S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
