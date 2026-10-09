@@ -1,11 +1,12 @@
-# source: tftactics.gg · 2026-10-08
-S | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Rengar, Vi, Nidalee, Sett
+# source: tftactics.gg · 2026-10-09
+S | Sprykin Summoners | Veigar, Teemo, Azir, Fiddlesticks, Rammus, Ezreal, Soraka, Zyra
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
 S | Invoker Spellweavers | Karma, Pebbles, Krug, Sett, Ahri, Morgana, Sentinel, Taric
+S | Lunar Invokers | Diana, Fiddlesticks, Hecarim, Lillia, Morgana, Sentinel, Alune, Taric
 S | Lunar Rapidfire | Varus, Diana, Kogmaw, Vi, Amumu, Aphelios, Nidalee, Sentinel
 S | Riftbeasts Reroll | Cinderling, Krug, Pebbles, Murkwolf, Scuttlecrab, Brambleback, Sentinel, Gnar
 S | Rivals Khazix | Ornn, Diana, Hecarim, Fiddlesticks, Khazix, Aphelios, Ezreal, Soraka
-S | Sprykin Summoners | Veigar, Teemo, Azir, Fiddlesticks, Rammus, Ezreal, Soraka, Zyra
+A | Caustic Adaptors | Yorick, Kogmaw, Krug, Master_yi, Rengar, Vi, Nidalee, Sett
 A | Apex Predator | Pebbles, Murkwolf, Krug, Brambleback, Sentinel, Elder_dragon, Gnar, Taric
 A | Blackthorn Sprykin | Kobuko, Reksai, Veigar, Azir, Fiddlesticks, Rammus, Malphite, Soraka
 A | Blossom Executioners | Alistar, Leblanc, Yunara, Ahri, Ezreal, Sett, Soraka, Kennen
