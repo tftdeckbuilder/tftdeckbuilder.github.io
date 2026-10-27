@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-10-26
+# source: tftactics.gg · 2026-10-27
 S | Riftbeast Ravagers | Pebbles, Murkwolf, Krug, Sentinel, Brambleback, Elder_dragon, Gnar
 S | Caustic Adaptors | Yorick, Gromp, Kogmaw, Krug, Master_yi, Vi, Nidalee, Sett
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
