@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-10-28
+# source: tftactics.gg · 2026-10-29
 S | Elderwood Blackthorn | Ornn, Reksai, Veigar, Alistar, Leblanc, Cassiopeia, Fiddlesticks, Soraka
 S | Elderwood Executioners | Alistar, Amumu, Ezreal, Draven, Gnar, Ivern, Kennen, Maokai, Taric
 S | Elderwood Invokers | Kobuko, Veigar, Alistar, Leblanc, Teemo, Hecarim, Morgana, Sentinel
