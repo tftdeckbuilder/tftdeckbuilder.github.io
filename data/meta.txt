@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-11-10
+# source: tftactics.gg · 2026-11-11
 S | Caustic Adaptors | Yorick, Gromp, Kogmaw, Krug, Master_yi, Vi, Nidalee, Sett
 S | Elderwood Rapidfire | Ornn, Xayah, Alistar, Leblanc, Aphelios, Lillia, Alune, Gnar
 S | Lunar Invokers | Diana, Fiddlesticks, Hecarim, Lillia, Morgana, Sentinel, Alune, Taric
