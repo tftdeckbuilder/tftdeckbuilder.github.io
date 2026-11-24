@@ -1,4 +1,4 @@
-# source: tftactics.gg · 2026-11-23
+# source: tftactics.gg · 2026-11-24
 S | Elderwood Summoners | Xayah, Alistar, Azir, Hecarim, Mama_beak, Krug, Sentinel, Zyra
 S | Caustic Adaptors | Yorick, Gromp, Kogmaw, Krug, Master_yi, Vi, Nidalee, Sett
 S | Elderwood Invokers | Kobuko, Veigar, Alistar, Leblanc, Teemo, Hecarim, Morgana, Sentinel
